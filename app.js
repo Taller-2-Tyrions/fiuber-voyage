@@ -10,18 +10,19 @@ const SRV_PORT = process.env.SRV_PORT
 const express = require("express");
 const request = require("request");
 const http = require("http");
+//var cors = require('cors')
 
 const fetch = (...args) =>
   import("node-fetch").then(({ default: fetch }) => fetch(...args));
 const app = express();
+//app.use(cors())
 
 const CONTENT_TYPE_JSON = {'Content-Type': 'application/json' }
 const EMPTY_JSON = "{}"
 
 app.get("/contents/:idUser", async (req,res) => {
   var idUser  = req.params.idUser
-  console.log("Retrieve utility content for user "+ idUser)
-  console.log("payment uri: "+ PAYMENT_URI)
+  console.log("Retrieve utility content for user id: "+ idUser)
 
   var options = {
     host: PAYMENT_HOST,
