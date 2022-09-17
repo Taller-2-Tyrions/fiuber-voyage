@@ -18,6 +18,13 @@
   },
   "homepage": "https://github.com/Taller-2-Tyrions/fiuber-voyage#readme",
   "dependencies": {
-    "request": "^2.88.2"
+    "dotenv": "^16.0.2",
+    "express": "^4.18.1",
+    "moment": "^2.29.4",
+    "node-fetch": "^2.6.7",
+    "pg": "^8.8.0",
+    "pg-promise": "^10.12.0",
+    "request": "^2.88.2",
+    "sync-request": "^6.1.0"
   }
 }
