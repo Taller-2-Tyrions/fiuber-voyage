@@ -26,7 +26,7 @@ app.get("/contents/:idUser", async (req,res) => {
 
   var options = {
     host: PAYMENT_HOST,
-    port: PAYMENT_PORT,
+    //port: PAYMENT_PORT,
     path: PAYMENT_PATH+'/3'
   };
 
@@ -39,7 +39,7 @@ app.get("/contents/:idUser", async (req,res) => {
     response.on("data", function(chunk) {
 
       console.log("Body: " + chunk);
-      
+
       res.set(CONTENT_TYPE_JSON)
       res.send(chunk)
       
