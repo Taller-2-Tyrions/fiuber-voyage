@@ -4,7 +4,7 @@ var PAYMENT_URI = process.env.PAYMENT_URI
 var PAYMENT_HOST = process.env.PAYMENT_HOST
 var PAYMENT_PORT = process.env.PAYMENT_PORT
 var PAYMENT_PATH = process.env.PAYMENT_PATH
-
+const PAYMENT_PROTOCOL = process.env.PAYMENT_PROTOCOL
 const SRV_PORT = process.env.SRV_PORT
 
 const express = require("express");
@@ -25,6 +25,7 @@ app.get("/contents/:idUser", async (req,res) => {
   console.log("Retrieve utility content for user id: "+ idUser)
 
   var options = {
+    protocol: PAYMENT_PROTOCOL,
     host: PAYMENT_HOST,
     port: PAYMENT_PORT,
     path: PAYMENT_PATH+'/3'
