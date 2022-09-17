@@ -27,7 +27,7 @@ app.get("/contents/:idUser", async (req,res) => {
   var options = {
     host: PAYMENT_HOST,
     //port: PAYMENT_PORT,
-    path: PAYMENT_PATH+'/3'
+    path: PAYMENT_PATH
   };
 
   console.log("Request fiuber-payments uri: "+ options.host+":"+options.port+"/"+options.path)
