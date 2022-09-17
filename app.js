@@ -10,7 +10,6 @@ const express = require("express");
 const request = require("request");
 const http = require("http");
 const https = require("https");
-//var cors = require('cors')
 
 const fetch = (...args) =>
   import("node-fetch").then(({ default: fetch }) => fetch(...args));
@@ -26,7 +25,6 @@ app.get("/contents/:idUser", async (req,res) => {
 
   var options = {
     host: PAYMENT_HOST,
-    //port: PAYMENT_PORT,
     path: PAYMENT_PATH
   };
 
