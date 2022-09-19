@@ -35,17 +35,23 @@ app.get("/activity/:idUser/travels/:travelCount", async (req, res) =>{
 
   console.log("Retrieve activity content for user id: "+ idUser+",travelCount: ",travelCount)
 
-  let res_data = await db.one(SELECT_TRAVELS_FOR_ID_USER, idUser)
+  let resData = await db.one(SELECT_TRAVELS_FOR_ID_USER, idUser)
       .then(data => {
         console.log("Travels:", data)
         return JSON.stringify(data)
       })
       .catch(function (error) {
           console.log("Error: retrieve Travels ", error)
-          return EMPTY_JSON
+          return error
       })
+  if(resData.code != undefined){ /* Response error */
+    res.statusCode = 500
+    res.set(CONTENT_TYPE_JSON)
+    res.send(JSON.stringify({error_code: resData.code,error_msg: resData.message}))
+  }
+
   res.set(CONTENT_TYPE_JSON)
-  res.send(res_data)
+  res.send(resData)
 
 })
 
