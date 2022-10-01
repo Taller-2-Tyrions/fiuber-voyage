@@ -22,7 +22,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 app.include_router(pricing.router)
+
 
 @app.get("/")
 async def root():

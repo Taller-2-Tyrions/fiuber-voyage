@@ -1,6 +1,4 @@
 from fastapi import APIRouter
-from fastapi.responses import JSONResponse
-from fastapi.exceptions import HTTPException
 from ..schemas import PriceRequest, PriceResponse
 
 
@@ -11,12 +9,8 @@ router = APIRouter(
 
 
 @router.post('/{id_user}')
-async def price(id_user:str, voyage: PriceRequest):
-	#To Do Check Modality Access (Nosotros O Gateway?)
-	#To Do Tener En Cuenta Motor De Reglas
+async def price(id_user: str, voyage: PriceRequest):
+    # To Do Check Modality Access (Nosotros O Gateway?)
+    # To Do Tener En Cuenta Motor De Reglas
 
-	return PriceResponse(price = 2)
-	
-
-
-
+    return PriceResponse(price=2)
