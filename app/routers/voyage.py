@@ -1,8 +1,9 @@
 from fastapi import APIRouter
 from fastapi.exceptions import HTTPException
-from ..schemas.voyage import InitVoyageBase, InitDriverBase
+from ..schemas.voyage import InitVoyageBase, DriverBase
 from ..database.mongo import db
 from ..crud import clients, drivers
+from ..firebase_notif.firebase import notify_drivers
 
 
 router = APIRouter(
@@ -11,14 +12,23 @@ router = APIRouter(
 )
 
 
+
+
 @router.post('/user')
 def init_voyage(voyage: InitVoyageBase):
     """
     Client Search For A Driver
     """
-    clients.create_searcher(db, voyage)
-    near_drivers = drivers.get_nearest_drivers(db, voyage)
-    # notify_drivers(near_drivers, voyage)
+    try: 
+        clients.create_client(db, voyage)
+        location_searched = [voyage.init.longitude, voyage.init.latitude]
+        near_drivers = drivers.get_nearest_drivers(db, location_searched)
+        notify_drivers(near_drivers, voyage)
+    except Exception as err:
+        raise HTTPException(detail={
+            'message': 'There was an error adding the client. '
+            + str(err)},
+            status_code=400)
 
 
 @router.post('/driver')

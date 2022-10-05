@@ -1,10 +1,5 @@
 from fastapi.encoders import jsonable_encoder
 
-# gateway ->users: create driver
-# gateway -> voyage: create driver -> agregamos Id y ubicacion actual a bdd.
-# (BDD Driver) -> ubicacion, id.
-# le mandamos a todos los que estan cerca de esta ubicacion.
-
 MAX_DRIVERS_FOUND = 10
 
 
@@ -25,17 +20,6 @@ def delete_driver(db, driver_id):
     db["drivers"].find_one_and_delete({"id": driver_id})
 
 def get_nearest_drivers(db, location):
-    # nearest = db.drivers.aggregate([
-    #     {"$match": {"is_searching": {"$eq": True}}},
-    #     {"$near": {
-    #         "$geometry": {
-    #             "type": "Point",
-    #             "coordinates": voyage.init
-    #         },
-    #     }},
-    #     {"$limit": MAX_DRIVERS_FOUND}
-    # ])
-
     nearest = db.drivers.aggregate([
         {"$geoNear": {
             "near": { "type": "Point", "coordinates": location },

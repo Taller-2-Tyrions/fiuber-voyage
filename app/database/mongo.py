@@ -1,4 +1,4 @@
-from pymongo import MongoClient
+from pymongo import MongoClient, GEOSPHERE
 from dotenv import load_dotenv
 import os
 
@@ -11,5 +11,6 @@ db = client["voyages"]
 clients = db.clients
 drivers = db.drivers
 
-clients.createIndex({"init": "2dsphere"})
-drivers.createIndex({"location": "2dsphere"})
+clients.create_index([("init", GEOSPHERE)])
+#clients.create_index([("expireAt", 1), ("expireAfterSeconds", 0)])
+drivers.create_index([("location", GEOSPHERE)])
