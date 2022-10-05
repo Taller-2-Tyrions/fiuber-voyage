@@ -24,7 +24,7 @@ def change_searching(db, driver_id, state):
 def delete_driver(db, driver_id):
     db["drivers"].find_one_and_delete({"id": driver_id})
 
-def get_nearest_drivers(db, voyage):
+def get_nearest_drivers(db, location):
     # nearest = db.drivers.aggregate([
     #     {"$match": {"is_searching": {"$eq": True}}},
     #     {"$near": {
@@ -35,12 +35,13 @@ def get_nearest_drivers(db, voyage):
     #     }},
     #     {"$limit": MAX_DRIVERS_FOUND}
     # ])
+
     nearest = db.drivers.aggregate([
-        {"$match": {"is_searching": {"$eq": True}}},
         {"$geoNear": {
-            "near": voyage.init,
-            "distanceField": "distance"
+            "near": { "type": "Point", "coordinates": location },
+            "distanceField": "dist.calculated"
         }},
+        {"$match": {"is_searching": {"$eq": True}}},
         {"$limit": MAX_DRIVERS_FOUND}
     ])
     return nearest

@@ -66,37 +66,37 @@ def test_create_in_mongo_localhost():
     assert (user_found.get("id") == driver_id)
 
 
-# def test_nearest_drivers():
-#     is_searching = True
-#     for i in range(5):
-#         drivers.delete_driver(db_testing, str(i))
+def test_nearest_drivers():
+    is_searching = True
+    drivers_collection = db_testing.drivers
     
-#     for i in range(5):
-#         driver_id = str(i)
-#         location = common.Point(longitude=i, latitude=i)
-#         user_example = voyage.DriverBase(id=driver_id, location=location,
-#                                          is_searching=is_searching)
-#         drivers.create_driver(db_testing, user_example)
+    drivers_collection.create_index([("location", pymongo.GEOSPHERE)])
+    
+    drivers_collection.delete_many({})
+    
+    for i in range(50):
+        driver_id = str(i)
+        location = common.Point(longitude=i, latitude=i)
+        user_example = voyage.DriverBase(id=driver_id, location=location,
+                                         is_searching=is_searching)
+        drivers.create_driver(db_testing, user_example)
 
-#     print("Los Chofered Se Añadieron")
+    print("Los Chofered Se Añadieron")
 
-#     location_searched = common.Point(longitude=0, latitude=0)
-#     passenger = voyage.PersonBase(id="pepe", name="pepe", last_name="pepe")
-#     voyage_searched = voyage.InitVoyageBase(passenger=passenger,
-#                                             init=location_searched,
-#                                             end=location_searched)
+    location_searched = [0,0]
+    nearest = drivers.get_nearest_drivers(db_testing, location_searched)
 
-#     nearest = drivers.get_nearest_drivers(db_testing, voyage_searched)
 
-#     print(f"Nearest Founds{nearest}")
+    ids = []
 
-#     ids = []
+    for driver in nearest:
+        print(driver)
+        ids.append(driver.get("id"))
 
-#     for driver in nearest:
-#         ids.append(driver.id)
+    for i in range(50):
+        if i < drivers.MAX_DRIVERS_FOUND:
+            assert (str(i) in ids)
+        else:
+            assert (str(i) not in ids)
 
-#     for i in range(drivers.MAX_DRIVERS_FOUND):
-#         assert (str(i) in ids)
-
-#     for i in range(5):
-#         drivers.delete_driver(db_testing, str(i))
+    drivers_collection.delete_many({})
