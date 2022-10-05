@@ -1,5 +1,6 @@
 from fastapi import APIRouter
-from ..schemas import PriceRequest, PriceResponse, ConfirmationPriceRequest
+from ..schemas.pricing import PriceRequest, PriceResponse
+from ..schemas.pricing import ConfirmationPriceRequest
 from datetime import datetime, time
 
 PRICE_PER_METER = 1.5

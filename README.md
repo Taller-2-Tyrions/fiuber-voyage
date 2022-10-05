@@ -1,5 +1,12 @@
 [![codecov](https://codecov.io/gh/Taller-2-Tyrions/fiuber-voyage/branch/main/graph/badge.svg?token=98bKdacJw1)](https://codecov.io/gh/Taller-2-Tyrions/fiuber-voyage)
 
+
+## Run Tests
+
+```bash
+python3 -m pytest tests/
+```
+
 # fiuber-voyage
 
 Historias involucradas

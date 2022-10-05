@@ -1,9 +1,5 @@
 from pydantic import BaseModel
-
-
-class Point(BaseModel):
-    latitude: float
-    longitude: float
+from .common import Point
 
 
 class PriceRequest(BaseModel):
