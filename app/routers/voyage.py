@@ -35,10 +35,10 @@ def ask_for_voyage(id_driver: str, voyage: InitVoyageBase):
     Client Chose a Driver. 
     """
     try:
-        drivers.set_waiting_if_searching(db, id_driver):
-        passenger.set_ 
-            driver = drivers.find_driver(db, id_driver)
-            voyage_info = pricing.get_voyage_info(voyage, [driver])
+        drivers.set_waiting_if_searching(db, id_driver)
+        passenger.set_waiting_confirmation_status(db, voyage.passenger.id)
+        driver = drivers.find_driver(db, id_driver)
+        voyage_info = pricing.get_voyage_info(voyage, [driver])
             
         # voyage_info = load_waiting_driver_voyage(voyage_info)
         #        Agregar en otra db que el cliente le pidio a este driver.

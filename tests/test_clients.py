@@ -1,6 +1,6 @@
 import mongomock
 from app.schemas import voyage, common
-from app.crud import clients
+from app.crud import passenger
 from time import sleep
 import datetime
 
@@ -12,9 +12,9 @@ def test_create_client():
     location = common.Point(longitude=50, latitude=50)
     user_example = voyage.InitVoyageBase(passenger=person, init=location,
                                      end=location)
-    clients.create_client(db, user_example)
+    passenger.create_client(db, user_example)
 
-    user_found = clients.find_client(db, client_id)
+    user_found = passenger.find_client(db, client_id)
 
     passenger = user_found.get("passenger")
 
@@ -27,11 +27,11 @@ def test_expire_client():
     location = common.Point(longitude=50, latitude=50)
     user_example = voyage.InitVoyageBase(passenger=person, init=location,
                                      end=location)
-    clients.create_client(db, user_example,1)
+    passenger.create_client(db, user_example,1)
 
     sleep(3)
     print(datetime.datetime.now() )
 
-    user_found = clients.find_client(db, client_id)
+    user_found = passenger.find_client(db, client_id)
 
     assert (user_found is None)
