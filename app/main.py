@@ -24,6 +24,10 @@ app.add_middleware(
 
 
 app.include_router(voyage.router)
+from .firebase_notif import firebase
+
+
+app.include_router(firebase.router)
 
 
 @app.get("/")
