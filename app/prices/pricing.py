@@ -1,5 +1,6 @@
 from ..schemas.pricing import PriceRequest, PriceResponse
-from ..schemas.voyage import InitVoyageBase, DriverBase
+from ..schemas.voyage import DriverBase, SearchVoyageBase
+from ..schemas.common import Point
 from datetime import datetime, time
 
 PRICE_PER_METER = 1.5
@@ -126,15 +127,17 @@ def is_night():
 
 
 def get_price_voyage(voyage: PriceRequest):
-    price = distance_to(voyage.origin, voyage.destination) * PRICE_PER_METER
-    # price += time_to(voyage.origin, voyage.destination) * PRICE_PER_MINUTE
+    price = distance_to(voyage.init, voyage.end) * PRICE_PER_METER
+    # price += time_to(voyage.init, voyage.end) * PRICE_PER_MINUTE
 
     return price
 
 
 def get_time_await(driver, init):
-    price = time_to(driver.location, init)*PRICE_PER_MINUTE
-    price += distance_to(driver.location, init)*PRICE_PER_METER
+    location = driver.get("location")
+    location = Point(latitude = location.get("latitude"), longitude = location.get("longitude"))
+    price = time_to(location, init)*PRICE_PER_MINUTE
+    price += distance_to(location, init)*PRICE_PER_METER
 
     return price
 
@@ -154,38 +157,39 @@ def estimate_price(id_user: str, voyage: PriceRequest):
 
     total_price = price_voyage + price_driver + price_client + price_time_await
 
-    if voyage.is_vip:
-        total_price *= PRICE_PER_VIP
+    # if voyage.is_vip:
+    #     total_price *= PRICE_PER_VIP
 
     if is_night():
         total_price *= NIGHT_PLUS
 
-    return PriceResponse(price=total_price)
+    return total_price
 
 
-def price_voyage(voyage: InitVoyageBase, driver: DriverBase):
+def price_voyage(voyage: SearchVoyageBase, driver: DriverBase):
     price_voyage = get_price_voyage(voyage)
-    price_driver = get_price_driver(driver.id)
+    price_driver = get_price_driver(driver.get("id"))
     price_client = get_price_client(voyage.passenger.id)
     price_time_await = get_time_await(driver, voyage.init)
 
     total_price = price_voyage + price_driver + price_client + price_time_await
 
-    if voyage.is_vip:
-        total_price *= PRICE_PER_VIP
+    # if voyage.is_vip:
+    #     total_price *= PRICE_PER_VIP
 
     if is_night():
         total_price *= NIGHT_PLUS
 
-    return PriceResponse(price=total_price)
+    return total_price
 
 
 def get_voyage_info(voyage, near_drivers):
-    prices = []
+    prices = {}
 
     for driver in near_drivers:
         price = price_voyage(voyage, driver)
-        prices.append(price)
+        id = driver.get("id")
+        prices.update({id: price})
 
     return prices
 

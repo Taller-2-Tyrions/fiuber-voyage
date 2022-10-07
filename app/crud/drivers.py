@@ -36,7 +36,7 @@ def get_nearest_drivers(db, location):
             "near": {"type": "Point", "coordinates": location},
             "distanceField": "dist.calculated"
         }},
-        {"$match": {"status": {"$eq": DriverStatus.SEARCHING}}},
+        {"$match": {"status": {"$eq": DriverStatus.SEARCHING.value}}},
         {"$limit": MAX_DRIVERS_FOUND}
     ])
     return nearest
@@ -45,14 +45,14 @@ def get_nearest_drivers(db, location):
 def update_driver(db, driver_id: str, changes):
     changes = jsonable_encoder(changes)
     driver_found = db["drivers"].find_one_and_update({"id": driver_id},
-                                                    {"$set": changes})
+                                                     {"$set": changes})
     return set_return_value(driver_found)
 
 
 def set_waiting_if_searching(db, driver_id):
     driver_status = find_driver(db, driver_id).get("status")
-    if driver_status != DriverStatus.SEARCHING:
+    if driver_status != DriverStatus.SEARCHING.value:
         raise HTTPException(detail={
             'message': 'Driver is not available.'},
             status_code=400)
-    change_status(db, driver_id, DriverStatus.WAITING)
+    change_status(db, driver_id, DriverStatus.WAITING.value)
