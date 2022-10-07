@@ -10,7 +10,7 @@ db = client["voyages"]
 
 clients = db.passenger
 drivers = db.drivers
+voyage = db.voyage
 
 clients.create_index([("init", GEOSPHERE)])
-#clients.create_index([("expireAt", 1), ("expireAfterSeconds", 0)])
 drivers.create_index([("location", GEOSPHERE)])
