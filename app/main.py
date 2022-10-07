@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from .routers import pricing, voyage
+from .routers import voyage
 from fastapi.middleware.cors import CORSMiddleware
 
 
@@ -23,7 +23,6 @@ app.add_middleware(
 )
 
 
-app.include_router(pricing.router)
 app.include_router(voyage.router)
 
 

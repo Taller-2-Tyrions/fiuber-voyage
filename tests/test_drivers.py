@@ -72,7 +72,7 @@ def test_nearest_drivers():
     drivers_collection.create_index([("location", pymongo.GEOSPHERE)])
     
     drivers_collection.delete_many({})
-    
+
     for i in range(50):
         driver_id = str(i)
         is_searching = i%2==0

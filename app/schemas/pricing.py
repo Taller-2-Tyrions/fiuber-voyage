@@ -22,7 +22,3 @@ class UserBase(BaseModel):
 class ClientBase(UserBase):
     money: int
     payment_method: str
-
-
-class ConfirmationPriceRequest(PriceRequest):
-    driver: UserBase

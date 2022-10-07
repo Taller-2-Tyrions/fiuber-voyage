@@ -1,5 +1,21 @@
 from pydantic import BaseModel
 from .common import Point
+from enum import Enum
+
+
+class DriverStatus(Enum):
+    SEARCHING = "SEARCHING"  # esta totalmente libre
+    WAITING = "WAITING"  # Viaje Confirmado Cliente
+    GOING = "GOING"  # Viaje Confirmado Ambos
+    TRAVELLING = "TRAVELLING"  # Ya con Cliente
+    OFFLINE = "OFFLINE"  # No espero viajes
+
+
+class PassengerStatus(Enum):
+    CHOOSING = "CHOOSING"  # Decidiendo Choferes / estado pasivo.
+    WAITING = "WAITING"  # Viaje Confirmado Cliente
+    GOING = "GOING"  # Viaje Confirmado Ambos
+    TRAVELLING = "TRAVELLING"  # Ya con Cliente
 
 
 class PersonBase(BaseModel):
@@ -17,4 +33,10 @@ class InitVoyageBase(BaseModel):
 class DriverBase(BaseModel):
     id: str
     location: Point
-    is_searching: bool
+    status: DriverStatus
+
+
+class PassengerBase(BaseModel):
+    id: str
+    location: Point
+    status: PassengerStatus
