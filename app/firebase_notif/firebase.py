@@ -49,7 +49,7 @@ def _get_access_token():
   return access_token_info.access_token
 
 
-@router.get('/noti1')
+@router.get('/noti-old')
 def send_push_notif():
     #deviceToken = 'UTouL4K78IXX3bpzKtP6ta'
 
@@ -71,7 +71,7 @@ def send_push_notif():
     print(response.json())
 
 
-@router.get('/noti2')
+@router.get('/noti-fcmNotification')
 def send_push_notif2():
     try:
         push_service = FCMNotification(
@@ -88,7 +88,7 @@ def send_push_notif2():
     except Exception as err: 
         return {"error": str(err)}
 
-@router.get('/noti3')
+@router.get('/noti-new')
 def send_push_notif3():
 
     registration_id = 'f8UDdNguSsaxwhwq5UTtug:APA91bGSeCb_LFUxVtYU_G24H_5Ka3dW65T9sSGkQ8OI9pISZJ6ZasNnS86wh9XOPM1XbFzQaXHk3XIZzT60fSFr9YZY2zC6YUul338Mh-0Ww2r0pMwE2HpkR91z-zFhh2SYZBxcLed0'
