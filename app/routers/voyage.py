@@ -1,4 +1,3 @@
-from ast import Pass
 from fastapi import APIRouter
 from fastapi.exceptions import HTTPException
 from ..schemas.voyage import SearchVoyageBase, DriverBase, PassengerStatus

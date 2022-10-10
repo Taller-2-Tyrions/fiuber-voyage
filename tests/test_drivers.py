@@ -68,14 +68,14 @@ def test_create_in_mongo_localhost():
 
 def test_nearest_drivers():
     drivers_collection = db_testing.drivers
-    
+
     drivers_collection.create_index([("location", pymongo.GEOSPHERE)])
-    
+
     drivers_collection.delete_many({})
 
     for i in range(50):
         driver_id = str(i)
-        is_searching = i%2==0
+        is_searching = i % 2 == 0
         location = common.Point(longitude=i, latitude=i)
         user_example = voyage.DriverBase(id=driver_id, location=location,
                                          is_searching=is_searching)
@@ -83,9 +83,8 @@ def test_nearest_drivers():
 
     print("Los Chofered Se Añadieron")
 
-    location_searched = [0,0]
+    location_searched = [0, 0]
     nearest = drivers.get_nearest_drivers(db_testing, location_searched)
-
 
     ids = []
 
@@ -94,7 +93,7 @@ def test_nearest_drivers():
         ids.append(driver.get("id"))
 
     for i in range(50):
-        if i < drivers.MAX_DRIVERS_FOUND*2 and i%2==0:
+        if i < drivers.MAX_DRIVERS_FOUND*2 and i % 2 == 0:
             assert (str(i) in ids)
         else:
             assert (str(i) not in ids)
