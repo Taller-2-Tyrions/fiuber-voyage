@@ -1,9 +1,5 @@
 from pydantic import BaseModel
-
-
-class Point(BaseModel):
-    latitude: float
-    longitude: float
+from .common import Point
 
 
 class PriceRequest(BaseModel):
@@ -26,7 +22,3 @@ class UserBase(BaseModel):
 class ClientBase(UserBase):
     money: int
     payment_method: str
-
-
-class ConfirmationPriceRequest(PriceRequest):
-    driver: UserBase

@@ -1,5 +1,6 @@
-from fastapi import APIRouter
-from ..schemas import PriceRequest, PriceResponse, ConfirmationPriceRequest
+from ..schemas.pricing import PriceRequest, PriceResponse
+from ..schemas.voyage import DriverBase, SearchVoyageBase
+from ..schemas.common import Point
 from datetime import datetime, time
 
 PRICE_PER_METER = 1.5
@@ -24,6 +25,7 @@ NIGHT_END = time(6, 0)
 AVERAGE_DRIVER_PRICE = 10
 AVERAGE_TIME_AWAIT = 10
 
+"""
 # price_voyage = PRICE_PER_METER * distancia + PRICE_PER_MINUTE * duracion
 #   seniority del driver indica antiguedad. Al tener mas antiguedad el Driver
 #        tendria mas beneficio en el precio de su viaje
@@ -58,11 +60,7 @@ AVERAGE_TIME_AWAIT = 10
 
 # To Do Tener En Cuenta Motor De Reglas ?
 
-
-router = APIRouter(
-    prefix="/price",
-    tags=['Price']
-)
+"""
 
 
 def distance_to(point_a, point_b):
@@ -70,6 +68,10 @@ def distance_to(point_a, point_b):
     longitude_dist = abs(point_a.longitude - point_b.longitude)
 
     return latitude_dist + longitude_dist
+
+
+def time_to(point_a, point_b):
+    return distance_to(point_a, point_b)*0.1
 
 
 def get_price_driver(id_user):
@@ -125,14 +127,22 @@ def is_night():
 
 
 def get_price_voyage(voyage: PriceRequest):
-    price = distance_to(voyage.origin, voyage.destination) * PRICE_PER_METER
-    # price += time_to(voyage.origin, voyage.destination) * PRICE_PER_MINUTE
+    price = distance_to(voyage.init, voyage.end) * PRICE_PER_METER
+    # price += time_to(voyage.init, voyage.end) * PRICE_PER_MINUTE
 
     return price
 
 
-@router.post('/{id_user}')
-async def estimate_price(id_user: str, voyage: PriceRequest):
+def get_time_await(driver, init):
+    location = driver.get("location")
+    location = Point(latitude = location.get("latitude"), longitude = location.get("longitude"))
+    price = time_to(location, init)*PRICE_PER_MINUTE
+    price += distance_to(location, init)*PRICE_PER_METER
+
+    return price
+
+
+def estimate_price(id_user: str, voyage: PriceRequest):
     # To Do Check Modality Access (Nosotros O Gateway?)
 
     price_voyage = get_price_voyage(voyage)
@@ -147,27 +157,39 @@ async def estimate_price(id_user: str, voyage: PriceRequest):
 
     total_price = price_voyage + price_driver + price_client + price_time_await
 
-    if voyage.is_vip:
-        total_price *= PRICE_PER_VIP
+    # if voyage.is_vip:
+    #     total_price *= PRICE_PER_VIP
 
     if is_night():
         total_price *= NIGHT_PLUS
 
-    return PriceResponse(price=total_price)
+    return total_price
 
 
-async def price_voyage(id_user: str, voyage: ConfirmationPriceRequest):
+def price_voyage(voyage: SearchVoyageBase, driver: DriverBase):
     price_voyage = get_price_voyage(voyage)
-    price_driver = get_price_driver(voyage)
-    price_client = get_price_client(id_user)
-    price_time_await = AVERAGE_TIME_AWAIT
+    price_driver = get_price_driver(driver.get("id"))
+    price_client = get_price_client(voyage.passenger.id)
+    price_time_await = get_time_await(driver, voyage.init)
 
     total_price = price_voyage + price_driver + price_client + price_time_await
 
-    if voyage.is_vip:
-        total_price *= PRICE_PER_VIP
+    # if voyage.is_vip:
+    #     total_price *= PRICE_PER_VIP
 
     if is_night():
         total_price *= NIGHT_PLUS
 
-    return PriceResponse(price=total_price)
+    return total_price
+
+
+def get_voyage_info(voyage, near_drivers):
+    prices = {}
+
+    for driver in near_drivers:
+        price = price_voyage(voyage, driver)
+        id = driver.get("id")
+        prices.update({id: price})
+
+    return prices
+
