@@ -1,6 +1,8 @@
 from fastapi.encoders import jsonable_encoder
 from bson.objectid import ObjectId
 
+from app.schemas.voyage import VoyageStatus
+
 
 def set_return_value(res):
     if res:
@@ -24,6 +26,32 @@ def change_status(db, voyage_id, state):
     changes = {"status": state}
     db["voyage"].find_one_and_update({"_id": ObjectId(voyage_id)},
                                      {"$set": changes})
+
+
+def change_status_possible(db, voyage_id, new, before):
+    voyage_status = find_voyage(db, voyage_id).get("status")
+    print(find_voyage(db, voyage_id))
+    if voyage_status != before:
+        raise Exception("Voyage is not available.")
+    change_status(db, voyage_id, new)
+
+
+def set_starting_status(db, voyage_id):
+    new_status = VoyageStatus.STARTING.value
+    before_status = VoyageStatus.WAITING.value
+    change_status_possible(db, voyage_id, new_status, before_status)
+
+
+def set_travelling_status(db, voyage_id):
+    new_status = VoyageStatus.TRAVELLING.value
+    before_status = VoyageStatus.STARTING.value
+    change_status_possible(db, voyage_id, new_status, before_status)
+
+
+def set_finished_status(db, voyage_id):
+    new_status = VoyageStatus.FINISHED.value
+    before_status = VoyageStatus.TRAVELLING.value
+    change_status_possible(db, voyage_id, new_status, before_status)
 
 
 def delete_voyage(db, voyage_id):

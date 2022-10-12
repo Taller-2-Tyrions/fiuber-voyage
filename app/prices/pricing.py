@@ -1,4 +1,4 @@
-from ..schemas.pricing import PriceRequest, PriceResponse
+from ..schemas.pricing import PriceRequest
 from ..schemas.voyage import DriverBase, SearchVoyageBase
 from ..schemas.common import Point
 from datetime import datetime, time
@@ -135,7 +135,8 @@ def get_price_voyage(voyage: PriceRequest):
 
 def get_time_await(driver, init):
     location = driver.get("location")
-    location = Point(latitude = location.get("latitude"), longitude = location.get("longitude"))
+    location = Point(latitude=location.get("latitude"),
+                     longitude=location.get("longitude"))
     price = time_to(location, init)*PRICE_PER_MINUTE
     price += distance_to(location, init)*PRICE_PER_METER
 
@@ -192,4 +193,3 @@ def get_voyage_info(voyage, near_drivers):
         prices.update({id: price})
 
     return prices
-

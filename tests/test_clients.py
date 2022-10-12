@@ -1,6 +1,6 @@
 import mongomock
 from app.schemas import voyage, common
-from app.crud import passenger
+from app.crud import passengers
 from time import sleep
 import datetime
 
@@ -11,14 +11,15 @@ def test_create_client():
     person = voyage.PersonBase(id=client_id, name="Pepe", last_name="Pepe")
     location = common.Point(longitude=50, latitude=50)
     user_example = voyage.InitVoyageBase(passenger=person, init=location,
-                                     end=location)
-    passenger.create_client(db, user_example)
+                                         end=location)
+    passengers.create_client(db, user_example)
 
-    user_found = passenger.find_client(db, client_id)
+    user_found = passengers.find_client(db, client_id)
 
     passenger = user_found.get("passenger")
 
     assert (passenger.get("id") == client_id)
+
 
 def test_expire_client():
     db = mongomock.MongoClient().db
@@ -26,12 +27,12 @@ def test_expire_client():
     person = voyage.PersonBase(id=client_id, name="Pepe", last_name="Pepe")
     location = common.Point(longitude=50, latitude=50)
     user_example = voyage.InitVoyageBase(passenger=person, init=location,
-                                     end=location)
-    passenger.create_client(db, user_example,1)
+                                         end=location)
+    passengers.create_client(db, user_example, 1)
 
     sleep(3)
-    print(datetime.datetime.now() )
+    print(datetime.datetime.now())
 
-    user_found = passenger.find_client(db, client_id)
+    user_found = passengers.find_client(db, client_id)
 
     assert (user_found is None)

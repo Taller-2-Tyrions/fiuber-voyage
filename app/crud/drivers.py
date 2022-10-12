@@ -1,6 +1,6 @@
 from fastapi.encoders import jsonable_encoder
 from ..schemas.voyage import DriverStatus
-from fastapi.exceptions import HTTPException
+from pymongo import ReturnDocument
 
 MAX_DRIVERS_FOUND = 10
 
@@ -26,6 +26,31 @@ def change_status(db, driver_id, state):
     db["drivers"].find_one_and_update({"id": driver_id}, {"$set": changes})
 
 
+def change_status_possible(db, driver_id, new, before):
+    driver_status = find_driver(db, driver_id).get("status")
+    if driver_status != before:
+        raise Exception("Driver is not available.")
+    change_status(db, driver_id, new)
+
+
+def set_waiting_status(db, driver_id):
+    new_status = DriverStatus.WAITING.value
+    before_status = DriverStatus.SEARCHING.value
+    change_status_possible(db, driver_id, new_status, before_status)
+
+
+def set_going_status(db, driver_id):
+    new_status = DriverStatus.GOING.value
+    before_status = DriverStatus.WAITING.value
+    change_status_possible(db, driver_id, new_status, before_status)
+
+
+def set_travelling_status(db, driver_id):
+    new_status = DriverStatus.TRAVELLING.value
+    before_status = DriverStatus.GOING.value
+    change_status_possible(db, driver_id, new_status, before_status)
+
+
 def delete_driver(db, driver_id):
     db["drivers"].find_one_and_delete({"id": driver_id})
 
@@ -44,15 +69,8 @@ def get_nearest_drivers(db, location):
 
 def update_driver(db, driver_id: str, changes):
     changes = jsonable_encoder(changes)
+    after = ReturnDocument.AFTER
     driver_found = db["drivers"].find_one_and_update({"id": driver_id},
-                                                     {"$set": changes})
+                                                     {"$set": changes},
+                                                     return_document=after)
     return set_return_value(driver_found)
-
-
-def set_waiting_if_searching(db, driver_id):
-    driver_status = find_driver(db, driver_id).get("status")
-    if driver_status != DriverStatus.SEARCHING.value:
-        raise HTTPException(detail={
-            'message': 'Driver is not available.'},
-            status_code=400)
-    change_status(db, driver_id, DriverStatus.WAITING.value)
