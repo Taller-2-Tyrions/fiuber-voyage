@@ -40,7 +40,3 @@ def set_travelling_status(db, passenger_id):
     new_status = PassengerStatus.TRAVELLING.value
     before_status = PassengerStatus.WAITING_DRIVER.value
     change_status_possible(db, passenger_id, new_status, before_status)
-
-
-def delete_passenger(db, passenger_id):
-    db["passenger"].find_one_and_delete({"id": passenger_id})

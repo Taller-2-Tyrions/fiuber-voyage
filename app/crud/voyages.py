@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from fastapi.encoders import jsonable_encoder
 from bson.objectid import ObjectId
 
@@ -62,34 +62,47 @@ def delete_voyage(db, voyage_id):
     db["voyage"].find_one_and_delete({"_id": ObjectId(voyage_id)})
 
 
-def get_date_voyages(db, id, is_driver, is_daily):
+def get_date_voyages(db, user_id, is_driver, is_daily):
     today = datetime.utcnow()
-    before = datetime(today.year, today.month, 1)
+    before = datetime(today.year, today.month, 1, 0, 0, 0)
     if is_daily:
-        before = today - datetime.timedelta(days=1)
+        before = today - timedelta(days=1)
 
-    id_parameter = "client_id"
+    before = before.isoformat()
+
+    id_parameter = "passenger_id"
     if is_driver:
         id_parameter = "driver_id"
 
     times = db.voyage.aggregate([
-        {"$match": {id_parameter: {"$eq": id},
-         "start_time": {"$gte": before},
-                    "status": {"$eq": VoyageStatus.FINISHED.value}}},
-        {"$count": "voyages"}
+        {"$match": {"$and": [
+            {"status": {"$eq": VoyageStatus.FINISHED.value}},
+            {id_parameter: {"$eq": user_id}},
+            {"start_time": {"$gte": before}}
+            ]}
+         },
+        {"$count": "amount"}
     ])
-    return times.get("voayges")
+    results = [date for date in times]
+    print(results)
+    return results[0].get("amount")
 
 
 def get_seniority(db, id, is_driver):
     today = datetime.utcnow()
+    id_parameter = "passenger_id"
     if is_driver:
         id_parameter = "driver_id"
 
     first_date = db.voyage.aggregate([
-        {"$match": {id_parameter: {"$eq": id},
-         "sort": {"$start_time": 1}}},
+        {"$match": {id_parameter: {"$eq": id}}},
+        {"$sort": {"start_time": 1}},
         {"$limit": 1}
-    ]).get("start_time")
+    ])
+    results = [date for date in first_date]
+    print(list(first_date))
+    first_date_str = results[0].get("start_time")
+
+    first_date = datetime.fromisoformat(first_date_str)
 
     return (today - first_date).days

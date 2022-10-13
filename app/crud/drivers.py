@@ -51,10 +51,6 @@ def set_travelling_status(db, driver_id):
     change_status_possible(db, driver_id, new_status, before_status)
 
 
-def delete_driver(db, driver_id):
-    db["drivers"].find_one_and_delete({"id": driver_id})
-
-
 def get_nearest_drivers(db, location):
     nearest = db.drivers.aggregate([
         {"$geoNear": {
@@ -87,4 +83,3 @@ def update_driver(db, driver_id: str, changes):
                                                      {"$set": changes},
                                                      return_document=after)
     return set_return_value(driver_found)
-
