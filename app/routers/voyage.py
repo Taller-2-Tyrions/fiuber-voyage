@@ -29,7 +29,7 @@ def cancel_confirmed_voyage(voyage_id: str, caller_id: str):
     is_driver = caller_id == driver_id
 
     if not is_driver and not is_passenger:
-        raise HTTPException(detail={'message': "You Can't Cancel Others"},
+        raise HTTPException(detail={'message': "Can't Cancel Others Voyage"},
                             status_code=400)
 
     if voyage_status == VoyageStatus.WAITING.value and is_passenger:
@@ -52,4 +52,4 @@ def cancel_confirmed_voyage(voyage_id: str, caller_id: str):
         raise HTTPException(detail={'message': 'Non Cancellable Voyage '},
                             status_code=400)
 
-    voyages.delete_voyage(db, voyage_id)
+    voyages.change_status(db, voyage_id, VoyageStatus.CANCELLED.value)

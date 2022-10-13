@@ -24,6 +24,7 @@ class VoyageStatus(Enum):
     STARTING = "STARTING"  # Chofer Yendo A Cliente
     TRAVELLING = "TRAVELLING"  # Ya con Cliente
     FINISHED = "FINISHED"  # Viaje Confirmado Ambos
+    CANCELLED = "CANCELLED"  # Viaje Cancelado
 
 
 class UserBase(BaseModel):

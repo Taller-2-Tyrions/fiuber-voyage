@@ -74,7 +74,8 @@ def get_date_voyages(db, id, is_driver, is_daily):
 
     times = db.voyage.aggregate([
         {"$match": {id_parameter: {"$eq": id},
-         "start_time": {"$gte": before}}},
+         "start_time": {"$gte": before},
+                    "status": {"$eq": VoyageStatus.FINISHED.value}}},
         {"$count": "voyages"}
     ])
     return times.get("voayges")

@@ -92,3 +92,10 @@ Viaje:
 	Origen
 	Destino
 	
+
+
+ - Tests
+ - Testearlo Nosotros :)
+ - Chequear Gateway
+ - Calificacion
+ - Denuncia
