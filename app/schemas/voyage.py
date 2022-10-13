@@ -1,7 +1,9 @@
 from datetime import datetime
+from lib2to3.pgen2 import driver
 from pydantic import BaseModel
 from .common import Point
 from enum import Enum
+from typing import Optional, List
 
 
 class DriverStatus(Enum):
@@ -27,6 +29,15 @@ class VoyageStatus(Enum):
     CANCELLED = "CANCELLED"  # Viaje Cancelado
 
 
+class ComplaintType(Enum):
+    STEAL = "STEAL"
+    SEXUAL_ASSAULT = "SEXUAL"
+    UNSAFE_DRIVING = "UNSAFE DRIVING"
+    UNSAFE_CAR = "UNSAFE CAR"
+    UNDER_INFLUENCE = "UNDER INFLUENCE"
+    AGGRESIVE = "AGGRESIVE"
+
+
 class UserBase(BaseModel):
     id: str
     location: Point
@@ -48,6 +59,23 @@ class SearchVoyageBase(BaseModel):
     is_vip: bool
 
 
+class ReviewBase(BaseModel):
+    voyage_id: str
+    puntaje: int
+    comment: Optional[str]
+    passenger_id: str
+    driver_id: str
+    is_driver: bool
+
+
+class ComplaintBase(BaseModel):
+    voyage_id: str
+    complaint_type: ComplaintType
+    description: str
+    driver_id: str
+    passenger_id: str
+
+
 class VoyageBase(BaseModel):
     passenger_id: str
     driver_id: str
@@ -58,3 +86,5 @@ class VoyageBase(BaseModel):
     is_vip: bool
     start_time: datetime
     end_time: datetime
+    reviews = List[ReviewBase] = []
+    complaints = List[ComplaintBase] = []

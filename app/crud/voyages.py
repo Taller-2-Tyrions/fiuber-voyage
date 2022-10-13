@@ -106,3 +106,26 @@ def get_seniority(db, id, is_driver):
     first_date = datetime.fromisoformat(first_date_str)
 
     return (today - first_date).days
+
+
+def get_last_voyages(db, id, is_driver, amount):
+    id_parameter = "passenger_id"
+    if is_driver:
+        id_parameter = "driver_id"
+
+    last_voyages = db.voyage.aggregate([
+        {"$match": {id_parameter: {"$eq": id}}},
+        {"$sort": {"start_time": -1}},
+        {"$limit": amount}
+    ])
+
+    return_lists = [data for data in last_voyages]
+
+    return return_lists
+
+
+def add_review(db, review):
+    voyage_id = review.voyage_id
+    review = jsonable_encoder(review)
+    db["voyage"].find_one_and_update({"_id": ObjectId(voyage_id)},
+                                     {"$push": {"reviews": review}})

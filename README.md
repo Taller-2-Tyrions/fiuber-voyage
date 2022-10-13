@@ -94,8 +94,10 @@ Viaje:
 	
 
 
- - Tests
- - Testearlo Nosotros :)
  - Chequear Gateway
+
  - Calificacion
  - Denuncia
+
+
+

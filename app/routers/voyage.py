@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from fastapi.exceptions import HTTPException
 
-from ..schemas.voyage import PassengerStatus
+from ..schemas.voyage import PassengerStatus, ReviewBase
 from ..schemas.voyage import DriverStatus, VoyageStatus
 from ..database.mongo import db
 from ..crud import drivers, passenger, voyages
@@ -53,3 +53,24 @@ def cancel_confirmed_voyage(voyage_id: str, caller_id: str):
                             status_code=400)
 
     voyages.change_status(db, voyage_id, VoyageStatus.CANCELLED.value)
+
+
+@router.get('/last/{user_id}/{is_driver}')
+def get_last_voyages(user_id: str, is_driver: bool):
+    """
+    Get the last 5 voyages for the user
+    """
+    try:
+        return voyages.get_last_voyages(db, user_id, is_driver)
+    except Exception:
+        raise HTTPException(detail={'message': "Can't Access Database"},
+                            status_code=400)
+
+
+@router.post('/review/')
+def add_review(review: ReviewBase):
+    """
+    User Load A Review Of Voyage
+    """
+    # TODO Check Ids make sense
+    voyages.add_review(db, review)
