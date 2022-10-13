@@ -11,7 +11,7 @@ import firebase_admin
 # [START get_service_account_tokens]
 from firebase_admin import credentials
 
-cred = credentials.Certificate('firebasekey2.json')
+cred = credentials.Certificate('firebasekey.json')
 access_token_info = cred.get_access_token()
 
 access_token = access_token_info.access_token
@@ -28,23 +28,22 @@ router = APIRouter(
     tags=['PRUEBA FIREBASE']
 )
 
-#server_apikey = 'AAAAWmYVtJQ:APA91bFbBzcX2AM7w4p_Nt5QiCCDhRiTSG46SbQcn83_DaMj-pnZzktbd_7r9MmkRfuLNve1S0yLHPT-_mDoEb756-QTgE8bapcGlWKtSAOVEQgY27t03Y2xa3ngBeEGJgvK9s7087zb'
-server_apikey = 'AAAAODISeRA:APA91bEYVUP4uUdemxUCP_5xT0d9OwC1auxZA1QNkjdyh_pAtAMrZ6pf5HDXZsQe3BCGk-wwKJp4GGgzH4WUhjSF7XwIXo-kyixviKYbQfjbAS_Hx__9qxHtHHP_wjDq-WOKNGwMMOe6'
+server_apikey = 'AAAAWmYVtJQ:APA91bFbBzcX2AM7w4p_Nt5QiCCDhRiTSG46SbQcn83_DaMj-pnZzktbd_7r9MmkRfuLNve1S0yLHPT-_mDoEb756-QTgE8bapcGlWKtSAOVEQgY27t03Y2xa3ngBeEGJgvK9s7087zb'
 registration_id = 'f8UDdNguSsaxwhwq5UTtug:APA91bGSeCb_LFUxVtYU_G24H_5Ka3dW65T9sSGkQ8OI9pISZJ6ZasNnS86wh9XOPM1XbFzQaXHk3XIZzT60fSFr9YZY2zC6YUul338Mh-0Ww2r0pMwE2HpkR91z-zFhh2SYZBxcLed0'
 
 api_key = 'AIzaSyBD7RU6CV4LP2uy_Fktm19Jcy6EdUCkbHs'
 
 SCOPES = ['https://www.googleapis.com/auth/firebase.messaging']
 
-#projectId = 'fiuber-36b86'#'test-fcm-f9779'
-projectId = 'fiuber-363101'
+projectId = 'fiuber-36b86'#'test-fcm-f9779'
+#projectId = 'fiuber-363101'
 def _get_access_token():
   """Retrieve a valid access token that can be used to authorize requests.
 
   :return: Access token.
   """
   credentials = ServiceAccountCredentials.from_json_keyfile_name(
-      'firebasekey2.json', SCOPES)
+      'firebasekey.json', SCOPES)
   access_token_info = credentials.get_access_token()
   return access_token_info.access_token
 
@@ -59,11 +58,14 @@ def send_push_notif():
     }
 
     body = {
-            'notification': {'title': 'Sending push form python script',
-                                'body': 'New Message'
-                                },
+            'data': {
+                        'experienceId': '@lucas.veron/mobile',
+                        'scopeKey': '@lucas.veron/mobile',
+                        'title': 'Sending push form python script',
+                        'message': 'New Message'
+                    },
             'to': registration_id,
-            'priority': 'high'
+            'priority': 'normal'
             }
     response = requests.post("https://fcm.googleapis.com/fcm/send",headers = headers, data=json.dumps(body))
     print(response.status_code)
@@ -92,6 +94,7 @@ def send_push_notif2():
 def send_push_notif3():
 
     registration_id = 'f8UDdNguSsaxwhwq5UTtug:APA91bGSeCb_LFUxVtYU_G24H_5Ka3dW65T9sSGkQ8OI9pISZJ6ZasNnS86wh9XOPM1XbFzQaXHk3XIZzT60fSFr9YZY2zC6YUul338Mh-0Ww2r0pMwE2HpkR91z-zFhh2SYZBxcLed0'
+    
     access_token = _get_access_token()
     headers = {
       'Authorization': 'Bearer ' + access_token,

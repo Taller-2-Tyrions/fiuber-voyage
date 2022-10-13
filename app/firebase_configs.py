@@ -8,23 +8,22 @@ import os
 load_dotenv()
 
 if (os.getenv("FIREBASE_KEY")):
-    f = open("firebasekey2.json", "w")
+    f = open("firebasekey.json", "w")
     f.write(json.loads(os.getenv("FIREBASE_KEY")))
     f.close()
 
-cred = credentials.Certificate("firebasekey2.json")
+cred = credentials.Certificate("firebasekey.json")
 
 firebase = firebase_admin.initialize_app(cred)
 
-firebaseConfig = {
-    "apiKey": "AIzaSyD91WTkhydpLbHkBqTUvvnXXcybpjF7uL8",
-    "authDomain": "fiuber-363101.firebaseapp.com",
-    "projectId": "fiuber-363101",
-    "storageBucket": "fiuber-363101.appspot.com",
-    "messagingSenderId": "241358240016",
-    "appId": "1:241358240016:web:877f17f6fbe238f54f8d95",
-    "measurementId": "G-BKBJ28KEVW"
-  };
+const firebaseConfig = {
+  "apiKey": "AIzaSyDoyemHyy6YoDE7pagRDyWYa-g7BK1ozEA",
+  "authDomain": "fiuber-36b86.firebaseapp.com",
+  "projectId": "fiuber-36b86",
+  "storageBucket": "fiuber-36b86.appspot.com",
+  "messagingSenderId": "388259755156",
+  "appId": "1:388259755156:web:8227d1dbe93508d2e9f081"
+};
 
 pb = pyrebase.initialize_app(firebaseConfig)
 
