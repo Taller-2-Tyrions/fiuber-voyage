@@ -1,7 +1,10 @@
+from app.crud import voyages
 from ..schemas.pricing import PriceRequest
 from ..schemas.voyage import DriverBase, SearchVoyageBase
 from ..schemas.common import Point
 from datetime import datetime, time
+
+from ..database.mongo import db
 
 PRICE_PER_METER = 1.5
 PRICE_PER_MINUTE = 1.5
@@ -74,13 +77,13 @@ def time_to(point_a, point_b):
     return distance_to(point_a, point_b)*0.1
 
 
-def get_price_driver(id_user):
-    # today_voyages = get_today_voyages(id_user)
-    # month_voyages = get_month_voyages(id_user)
-    # seniority = get_seniority(id_user)
+def get_price_driver(id_driver):
+    today_voyages = voyages.get_date_voyages(db, id_driver,
+                                             is_driver=True, is_daily=True)
+    month_voyages = voyages.get_date_voyages(db, id_driver,
+                                             is_driver=True, is_daily=False)
+    seniority = voyages.get_seniority(id_driver, is_driver=True)
 
-    today_voyages = 50
-    month_voyages = 1
     seniority = 1
 
     total_price = 0
@@ -96,12 +99,12 @@ def get_price_driver(id_user):
 
 
 def get_price_client(id_user):
-    # today_voyages = get_today_voyages(id_user)
-    # month_voyages = get_month_voyages(id_user)
-    # seniority = get_seniority(id_user)
+    today_voyages = voyages.get_date_voyages(db, id_user,
+                                             is_driver=False, is_daily=True)
+    month_voyages = voyages.get_date_voyages(db, id_user,
+                                             is_driver=False, is_daily=False)
+    seniority = voyages.get_seniority(id_user, is_driver=False)
 
-    today_voyages = 50
-    month_voyages = 1
     seniority = 1
 
     total_price = BASE_PRICE_CLIENT
@@ -117,7 +120,7 @@ def get_price_client(id_user):
 
 
 def is_night():
-    now = datetime.now()
+    now = datetime.utcnow()
     now_time = now.time()
 
     if now_time >= NIGHT_START or now_time <= NIGHT_END:
@@ -128,7 +131,7 @@ def is_night():
 
 def get_price_voyage(voyage: PriceRequest):
     price = distance_to(voyage.init, voyage.end) * PRICE_PER_METER
-    # price += time_to(voyage.init, voyage.end) * PRICE_PER_MINUTE
+    price += time_to(voyage.init, voyage.end) * PRICE_PER_MINUTE
 
     return price
 
@@ -144,8 +147,6 @@ def get_time_await(driver, init):
 
 
 def estimate_price(id_user: str, voyage: PriceRequest):
-    # To Do Check Modality Access (Nosotros O Gateway?)
-
     price_voyage = get_price_voyage(voyage)
     price_driver = AVERAGE_DRIVER_PRICE
     price_client = get_price_client(id_user)
@@ -158,8 +159,8 @@ def estimate_price(id_user: str, voyage: PriceRequest):
 
     total_price = price_voyage + price_driver + price_client + price_time_await
 
-    # if voyage.is_vip:
-    #     total_price *= PRICE_PER_VIP
+    if voyage.is_vip:
+        total_price *= PRICE_PER_VIP
 
     if is_night():
         total_price *= NIGHT_PLUS
@@ -175,21 +176,23 @@ def price_voyage(voyage: SearchVoyageBase, driver: DriverBase):
 
     total_price = price_voyage + price_driver + price_client + price_time_await
 
-    # if voyage.is_vip:
-    #     total_price *= PRICE_PER_VIP
-
     if is_night():
         total_price *= NIGHT_PLUS
 
     return total_price
 
 
-def get_voyage_info(voyage, near_drivers):
+def add_vip_price(price):
+    return price * PRICE_PER_VIP
+
+
+def get_voyage_info(voyage, near_drivers, is_vip):
     prices = {}
 
     for driver in near_drivers:
         price = price_voyage(voyage, driver)
         id = driver.get("id")
+        price = add_vip_price(is_vip)
         prices.update({id: price})
 
     return prices

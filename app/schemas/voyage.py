@@ -1,3 +1,4 @@
+from datetime import datetime
 from pydantic import BaseModel
 from .common import Point
 from enum import Enum
@@ -28,6 +29,7 @@ class VoyageStatus(Enum):
 class UserBase(BaseModel):
     id: str
     location: Point
+    is_vip: bool
 
 
 class DriverBase(UserBase):
@@ -42,6 +44,7 @@ class SearchVoyageBase(BaseModel):
     passenger: PassengerBase
     init: Point
     end: Point
+    is_vip: bool
 
 
 class VoyageBase(BaseModel):
@@ -51,3 +54,6 @@ class VoyageBase(BaseModel):
     end: Point
     status: VoyageStatus
     price: float
+    is_vip: bool
+    start_time: datetime
+    end_time: datetime

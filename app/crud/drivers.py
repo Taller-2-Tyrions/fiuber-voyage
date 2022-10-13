@@ -67,6 +67,19 @@ def get_nearest_drivers(db, location):
     return nearest
 
 
+def get_nearest_drivers_vip(db, location):
+    nearest = db.drivers.aggregate([
+        {"$geoNear": {
+            "near": {"type": "Point", "coordinates": location},
+            "distanceField": "dist.calculated"
+        }},
+        {"$match": {"status": {"$eq": DriverStatus.SEARCHING.value},
+                    "is_vip": {"$eq": True}}},
+        {"$limit": MAX_DRIVERS_FOUND}
+    ])
+    return nearest
+
+
 def update_driver(db, driver_id: str, changes):
     changes = jsonable_encoder(changes)
     after = ReturnDocument.AFTER
@@ -74,3 +87,4 @@ def update_driver(db, driver_id: str, changes):
                                                      {"$set": changes},
                                                      return_document=after)
     return set_return_value(driver_found)
+

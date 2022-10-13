@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from .routers import voyage
+from .routers import voyage, driver, passenger
 from fastapi.middleware.cors import CORSMiddleware
 
 
@@ -24,6 +24,8 @@ app.add_middleware(
 
 
 app.include_router(voyage.router)
+app.include_router(driver.router)
+app.include_router(passenger.router)
 
 
 @app.get("/")
