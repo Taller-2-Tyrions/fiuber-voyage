@@ -1,5 +1,7 @@
 from fastapi import APIRouter
 from fastapi.exceptions import HTTPException
+
+from app.schemas.common import Point
 from ..schemas.voyage import SearchVoyageBase, DriverBase, PassengerStatus
 from ..schemas.voyage import DriverStatus, VoyageBase, VoyageStatus
 from ..database.mongo import db
@@ -48,7 +50,7 @@ def ask_for_voyage(id_driver: str, voyage: SearchVoyageBase):
                                       price=price)
 
         id = voyages.create_voyage(db, confirmed_voyage)
-        drivers.set_waiting_if_searching(db, id_driver)
+        drivers.set_waiting_status(db, id_driver)
         passenger.set_waiting_confirmation_status(db, voyage.passenger.id)
 
         # send push notif to driver
@@ -91,8 +93,8 @@ def accept_voyage(id_voyage: str, status: bool, driver_id: str):
     try:
         if status:
             passenger.set_waiting_driver_status(db, voyage.get("passenger_id"))
-            drivers.change_status(db, driver_id, DriverStatus.GOING.value)
-            voyages.change_status(db, id_voyage, VoyageStatus.STARTING.value)
+            drivers.set_going_status(db, driver_id)
+            voyages.set_starting_status(db, id_voyage)
             # push notification
         else:
             voyages.delete_voyage(db, id_voyage)
@@ -173,9 +175,9 @@ def inform_start_voyage(voyage_id: str, caller_id: str):
         raise HTTPException(detail={'message': 'No Authorized'},
                             status_code=400)
 
-    voyages.change_status(db, voyage_id, VoyageStatus.TRAVELLING.value)
-    drivers.change_status(db, driver_id, DriverStatus.TRAVELLING.value)
-    passenger.change_status(db, passenger_id, PassengerStatus.TRAVELLING.value)
+    voyages.set_travelling_status(db, voyage_id)
+    drivers.set_travelling_status(db, driver_id)
+    passenger.set_travelling_status(db, passenger_id)
 
 
 @router.post('/finish/{voyage_id}/{caller_id}')
@@ -194,20 +196,59 @@ def inform_finish_voyage(voyage_id: str, caller_id: str):
         raise HTTPException(detail={'message': 'No Authorized'},
                             status_code=400)
 
-    voyages.change_status(db, voyage_id, VoyageStatus.FINISHED.value)
+    voyages.set_finished_status(db, voyage_id)
     drivers.change_status(db, driver_id, DriverStatus.SEARCHING.value)
     passenger.change_status(db, passenger_id, PassengerStatus.CHOOSING.value)
 
-# @router.post('/start_search/{driver_id}')
-# def activate_driver(driver_id: str):
-#     """
-#     An offline driver is set to searching
-#     """
-#     driver = drivers.find(db, driver_id)
-#     if not driver:
-#         raise HTTPException(detail={'message': 'Non Existent Driver'},
-#                             status_code=400)
 
-#     if driver.get("status") == DriverStatus.OFFLINE.value:
-#         raise HTTPException(detail={'message': 'Driver Not Offline'},
-#                             status_code=400)
+@router.post('/start_search/{driver_id}')
+def activate_driver(driver_id: str):
+    """
+    An offline driver is set to searching
+    """
+    driver = drivers.find_driver(db, driver_id)
+    if not driver:
+        raise HTTPException(detail={'message': 'Non Existent Driver'},
+                            status_code=400)
+
+    status = driver.get("status")
+
+    is_offline = status == DriverStatus.OFFLINE.value
+    is_searching = status == DriverStatus.SEARCHING.value
+
+    if not is_offline and not is_searching:
+        raise HTTPException(detail={'message': "Can't Change To Searching"},
+                            status_code=400)
+
+    drivers.change_status(db, driver_id, DriverStatus.SEARCHING.value)
+
+
+@router.post("/location/{driver_id}")
+def locate_driver(driver_id: str, location: Point):
+    """
+    Recieves a driver id an update the location of it in the database
+    """
+    changes = {"location": location}
+    return drivers.update_driver(db, driver_id, changes)
+
+
+@router.post('/stop_search/{driver_id}')
+def deactivate_driver(driver_id: str):
+    """
+    A Seaching driver is set to Offline
+    """
+    driver = drivers.find_driver(db, driver_id)
+    if not driver:
+        raise HTTPException(detail={'message': 'Non Existent Driver'},
+                            status_code=400)
+
+    status = driver.get("status")
+
+    is_offline = status == DriverStatus.OFFLINE.value
+    is_searching = status == DriverStatus.SEARCHING.value
+
+    if not is_offline and not is_searching:
+        raise HTTPException(detail={'message': "Can't Change To Offline"},
+                            status_code=400)
+
+    drivers.change_status(db, driver_id, DriverStatus.OFFLINE.value)

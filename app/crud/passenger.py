@@ -17,18 +17,29 @@ def change_status(db, passenger_id, state):
                                         {"$set": changes})
 
 
-def set_waiting_confirmation_status(db, passenger_id):
+def change_status_possible(db, passenger_id, new, before):
     passenger_status = find_passenger(db, passenger_id).get("status")
-    if passenger_status != PassengerStatus.CHOOSING.value:
+    if passenger_status != before:
         raise Exception("Passenger is not available.")
-    change_status(db, passenger_id, PassengerStatus.WAITING_CONFIRMATION.value)
+    change_status(db, passenger_id, new)
+
+
+def set_waiting_confirmation_status(db, passenger_id):
+    new_status = PassengerStatus.WAITING_CONFIRMATION.value
+    before_status = PassengerStatus.CHOOSING.value
+    change_status_possible(db, passenger_id, new_status, before_status)
 
 
 def set_waiting_driver_status(db, passenger_id):
-    passenger_status = find_passenger(db, passenger_id).get("status")
-    if passenger_status != PassengerStatus.WAITING_CONFIRMATION.value:
-        raise Exception("Passenger is not available.")
-    change_status(db, passenger_id, PassengerStatus.WAITING_DRIVER.value)
+    new_status = PassengerStatus.WAITING_DRIVER.value
+    before_status = PassengerStatus.WAITING_CONFIRMATION.value
+    change_status_possible(db, passenger_id, new_status, before_status)
+
+
+def set_travelling_status(db, passenger_id):
+    new_status = PassengerStatus.TRAVELLING.value
+    before_status = PassengerStatus.WAITING_DRIVER.value
+    change_status_possible(db, passenger_id, new_status, before_status)
 
 
 def delete_passenger(db, passenger_id):

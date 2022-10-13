@@ -1,6 +1,6 @@
 import mongomock
-from app.schemas import voyage, common
-from app.crud import drivers
+from ..app.schemas import voyage, common
+from ..app.crud import drivers
 import pymongo
 
 test_client = pymongo.MongoClient()
