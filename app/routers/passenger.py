@@ -127,7 +127,7 @@ def ask_for_voyage(id_driver: str, voyage: SearchVoyageBase):
             status_code=400)
 
 
-@router.delete('/search')
+@router.delete('/search/{passenger_id}')
 def cancel_search(passenger_id: str):
     """
     Passenger Cancels Voyage Search
