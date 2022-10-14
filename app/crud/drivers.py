@@ -51,10 +51,6 @@ def set_travelling_status(db, driver_id):
     change_status_possible(db, driver_id, new_status, before_status)
 
 
-def delete_driver(db, driver_id):
-    db["drivers"].find_one_and_delete({"id": driver_id})
-
-
 def get_nearest_drivers(db, location):
     nearest = db.drivers.aggregate([
         {"$geoNear": {
@@ -62,6 +58,19 @@ def get_nearest_drivers(db, location):
             "distanceField": "dist.calculated"
         }},
         {"$match": {"status": {"$eq": DriverStatus.SEARCHING.value}}},
+        {"$limit": MAX_DRIVERS_FOUND}
+    ])
+    return nearest
+
+
+def get_nearest_drivers_vip(db, location):
+    nearest = db.drivers.aggregate([
+        {"$geoNear": {
+            "near": {"type": "Point", "coordinates": location},
+            "distanceField": "dist.calculated"
+        }},
+        {"$match": {"status": {"$eq": DriverStatus.SEARCHING.value},
+                    "is_vip": {"$eq": True}}},
         {"$limit": MAX_DRIVERS_FOUND}
     ])
     return nearest

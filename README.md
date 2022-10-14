@@ -92,3 +92,12 @@ Viaje:
 	Origen
 	Destino
 	
+
+
+ - Chequear Gateway
+
+ - Calificacion
+ - Denuncia
+
+
+
