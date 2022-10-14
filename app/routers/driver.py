@@ -19,10 +19,10 @@ def add_driver(id_driver: str):
     Add Driver To List
     """
     try:
-        location = common.Point(longitude=50.0, latitude=50.0)
-        driver = voyage.DriverBase(id=id_driver, location=location,
-                                   status=DriverStatus.OFFLINE.value,
-                                   is_vip=False)
+        location = Point(longitude=50.0, latitude=50.0)
+        driver = DriverBase(id=id_driver, location=location,
+                            status=DriverStatus.OFFLINE.value,
+                            is_vip=False)
         drivers.create_driver(db, driver)
     except Exception as err:
         raise HTTPException(detail={
