@@ -13,7 +13,7 @@ router = APIRouter(
 )
 
 
-@router.post('/{id_driver}')
+@router.post('/signup/{id_driver}')
 def add_driver(id_driver: str):
     """
     Add Driver To List
@@ -84,7 +84,7 @@ def driver_change_vip(driver_id: str, is_vip: bool):
     """
     try:
         changes = {"is_vip": is_vip}
-        drivers.update_driver(db, driver_id, changes)
+        return drivers.update_driver(db, driver_id, changes)
     except Exception as err:
         raise HTTPException(detail={
             'message': 'There was an error accessing the drivers database '
@@ -101,7 +101,7 @@ def locate_driver(driver_id: str, location: Point):
     return drivers.update_driver(db, driver_id, changes)
 
 
-@router.post('/{id_voyage}/{status}')
+@router.post('/reply/{id_voyage}/{status}/{driver_id}')
 def accept_voyage(id_voyage: str, status: bool, driver_id: str):
     """
     Driver Acepts (True) / Declines (False) client solicitation

@@ -1,5 +1,13 @@
 from fastapi.encoders import jsonable_encoder
 from ..schemas.voyage import PassengerStatus
+from pymongo import ReturnDocument
+
+
+def set_return_value(res):
+    if res:
+        return str(res)
+    else:
+        return None
 
 
 def create_passenger(db, passenger):
@@ -40,3 +48,12 @@ def set_travelling_status(db, passenger_id):
     new_status = PassengerStatus.TRAVELLING.value
     before_status = PassengerStatus.WAITING_DRIVER.value
     change_status_possible(db, passenger_id, new_status, before_status)
+
+
+def update_passenger(db, passenger_id: str, changes):
+    changes = jsonable_encoder(changes)
+    after = ReturnDocument.AFTER
+    passenger_found = db.passenger.find_one_and_update({"id": passenger_id},
+                                                       {"$set": changes},
+                                                       return_document=after)
+    return set_return_value(passenger_found)

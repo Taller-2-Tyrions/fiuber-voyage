@@ -82,7 +82,7 @@ def get_price_driver(id_driver):
                                              is_driver=True, is_daily=True)
     month_voyages = voyages.get_date_voyages(db, id_driver,
                                              is_driver=True, is_daily=False)
-    seniority = voyages.get_seniority(id_driver, is_driver=True)
+    seniority = voyages.get_seniority(db, id_driver, is_driver=True)
 
     seniority = 1
 
@@ -103,7 +103,7 @@ def get_price_client(id_user):
                                              is_driver=False, is_daily=True)
     month_voyages = voyages.get_date_voyages(db, id_user,
                                              is_driver=False, is_daily=False)
-    seniority = voyages.get_seniority(id_user, is_driver=False)
+    seniority = voyages.get_seniority(db, id_user, is_driver=False)
 
     seniority = 1
 
@@ -171,7 +171,7 @@ def estimate_price(id_user: str, voyage: PriceRequest):
 def price_voyage(voyage: SearchVoyageBase, driver: DriverBase):
     price_voyage = get_price_voyage(voyage)
     price_driver = get_price_driver(driver.get("id"))
-    price_client = get_price_client(voyage.passenger.id)
+    price_client = get_price_client(voyage.passenger_id)
     price_time_await = get_time_await(driver, voyage.init)
 
     total_price = price_voyage + price_driver + price_client + price_time_await
@@ -192,7 +192,8 @@ def get_voyage_info(voyage, near_drivers, is_vip):
     for driver in near_drivers:
         price = price_voyage(voyage, driver)
         id = driver.get("id")
-        price = add_vip_price(is_vip)
+        if is_vip:
+            price = add_vip_price(price)
         prices.update({id: price})
 
     return prices

@@ -72,7 +72,7 @@ def add_review(voyage_id: str,  caller_id: str, review: ReviewBase):
     """
     User Load A Review Of Voyage
     """
-    voyage = voyages.find_voyage(voyage_id)
+    voyage = voyages.find_voyage(db, voyage_id)
     if not voyage:
         raise HTTPException(detail={'message': 'Non Existent Voyage'},
                             status_code=400)

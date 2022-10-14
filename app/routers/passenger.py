@@ -17,13 +17,13 @@ router = APIRouter(
 )
 
 
-@router.post('/{id_passenger}')
+@router.post('/signup/{id_passenger}')
 def add_passenger(id_passenger: str):
     """
     Add Passenger To List
     """
     try:
-        location = Point(longitude=50.0, latitude=50.0)
+        location = Point(longitude=0.0, latitude=0.0)
         person = PassengerBase(id=id_passenger, location=location,
                                status=PassengerStatus.CHOOSING.value,
                                is_vip=False)
@@ -42,7 +42,7 @@ def passenger_change_vip(passenger_id: str, is_vip: bool):
     """
     try:
         changes = {"is_vip": is_vip}
-        passenger.update_passenger(db, passenger_id, changes)
+        return passenger.update_passenger(db, passenger_id, changes)
     except Exception as err:
         raise HTTPException(detail={
             'message': 'There was an error accessing the passengers database '
@@ -69,10 +69,10 @@ def search_near_drivers(voyage: SearchVoyageBase):
 
         final_prices = {}
 
-        for driver, price in prices.items:
+        for driver, price in prices.items():
             final_prices.update({driver: {"Standard": price}})
 
-        for driver, price in vip_prices.items:
+        for driver, price in vip_prices.items():
             before = final_prices.get(driver, {})
             before.update({"VIP": price})
             final_prices.update({driver: before})
@@ -80,23 +80,23 @@ def search_near_drivers(voyage: SearchVoyageBase):
         return final_prices
     except Exception as err:
         raise HTTPException(detail={
-            'message': 'There was an error searching drivers'
+            'message': 'There was an error searching drivers '
             + str(err)},
             status_code=400)
 
 
-# TODO: Agregar al SearchVoyageBase calificacion de user, etc.
 @router.post('/search/{id_driver}')
 def ask_for_voyage(id_driver: str, voyage: SearchVoyageBase):
     """
     Passenger Chose a Driver.
     """
+    print("Hola ask")
     try:
         driver = drivers.find_driver(db, id_driver)
         price = pricing.price_voyage(voyage, driver)
-        client = passenger.find_passenger(db, voyage.passenger.id)
+        client = passenger.find_passenger(db, voyage.passenger_id)
         is_vip = False
-        if voyage.is_vip and driver.is_vip and client.is_vip:
+        if voyage.is_vip and driver.get("is_vip") and client.get("is_vip"):
             is_vip = True
             price = pricing.add_vip_price(price)
         elif voyage.is_vip:
@@ -104,7 +104,7 @@ def ask_for_voyage(id_driver: str, voyage: SearchVoyageBase):
                                 'message': 'Not Allowed For VIP voyage'},
                                 status_code=400)
 
-        confirmed_voyage = VoyageBase(passenger_id=voyage.passenger.id,
+        confirmed_voyage = VoyageBase(passenger_id=voyage.passenger_id,
                                       driver_id=id_driver, init=voyage.init,
                                       end=voyage.end,
                                       status=VoyageStatus.WAITING.value,
@@ -115,7 +115,7 @@ def ask_for_voyage(id_driver: str, voyage: SearchVoyageBase):
 
         id = voyages.create_voyage(db, confirmed_voyage)
         drivers.set_waiting_status(db, id_driver)
-        passenger.set_waiting_confirmation_status(db, voyage.passenger.id)
+        passenger.set_waiting_confirmation_status(db, voyage.passenger_id)
 
         # send push notif to driver
 
@@ -142,7 +142,7 @@ def add_complaint(voyage_id: str,  caller_id: str, complaint: ComplaintBase):
     """
     Passenger Load A Complaint Of Voyage
     """
-    voyage = voyages.find_voyage(voyage_id)
+    voyage = voyages.find_voyage(db, voyage_id)
     if not voyage:
         raise HTTPException(detail={'message': 'Non Existent Voyage'},
                             status_code=400)
