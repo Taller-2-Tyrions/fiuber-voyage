@@ -13,14 +13,17 @@ router = APIRouter(
 )
 
 
-@router.post('/')
-def add_driver(driver: DriverBase):
+@router.post('/{id_driver}')
+def add_driver(id_driver: str):
     """
     Add Driver To List
     """
     try:
+        location = common.Point(longitude=50.0, latitude=50.0)
+        driver = voyage.DriverBase(id=id_driver, location=location,
+                                           status=DriverStatus.OFFLINE.value,
+                                           is_vip=False)
         drivers.create_driver(db, driver)
-        drivers.change_status(db, driver.id, DriverStatus.OFFLINE.value)
     except Exception as err:
         raise HTTPException(detail={
             'message': 'There was an error accessing the drivers database '
