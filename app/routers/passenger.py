@@ -2,6 +2,8 @@ from datetime import datetime
 from fastapi import APIRouter
 from fastapi.exceptions import HTTPException
 
+from app.schemas.common import Point
+
 from ..schemas.voyage import ComplaintBase, PassengerBase
 from ..schemas.voyage import SearchVoyageBase, PassengerStatus
 from ..schemas.voyage import VoyageBase, VoyageStatus
@@ -21,11 +23,11 @@ def add_passenger(id_passenger: str):
     Add Passenger To List
     """
     try:
-        location = common.Point(longitude=50.0, latitude=50.0)
-        person = voyage.PassengerBase(id=id_passenger, location=location,
-                                      status=PassengerStatus.CHOOSING.value,
-                                      is_vip=False)
-        passenger.create_passenger(db, passenger)
+        location = Point(longitude=50.0, latitude=50.0)
+        person = PassengerBase(id=id_passenger, location=location,
+                               status=PassengerStatus.CHOOSING.value,
+                               is_vip=False)
+        passenger.create_passenger(db, person)
     except Exception as err:
         raise HTTPException(detail={
             'message': 'There was an error adding the passenger '
