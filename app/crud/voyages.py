@@ -20,7 +20,7 @@ def find_voyage(db, voyage_id):
 def create_voyage(db, voyage):
     voyage = jsonable_encoder(voyage)
     value = db["voyage"].insert_one(voyage)
-    return value.inserted_id
+    return str(value.inserted_id)
 
 
 def change_status(db, voyage_id, state):
@@ -124,8 +124,38 @@ def get_last_voyages(db, id, is_driver, amount):
     return return_lists
 
 
-def add_review(db, review):
-    voyage_id = review.voyage_id
+def add_review(db, voyage_id, review):
     review = jsonable_encoder(review)
     db["voyage"].find_one_and_update({"_id": ObjectId(voyage_id)},
                                      {"$push": {"reviews": review}})
+
+
+def add_complaint(db, voyage_id, complaint):
+    complaint = jsonable_encoder(complaint)
+    db["voyage"].find_one_and_update({"_id": ObjectId(voyage_id)},
+                                     {"$push": {"complaints": complaint}})
+
+
+def get_average_score(db, user_id, is_driver):
+    id_parameter = "passenger_id"
+    if is_driver:
+        id_parameter = "driver_id"
+
+    by_driver = not is_driver
+
+    average_ret = db.voyage.aggregate([
+                                {"$unwind": "$reviews"},
+                                {"$match": {"$and": [
+                                    {id_parameter: {"$eq": user_id}},
+                                    {"reviews.by_driver": {"$eq": by_driver}}
+                                    ]}},
+                                {"$group": {
+                                     "_id": {
+                                        "user_id": "$"+id_parameter,
+                                     },
+                                     "$avg": {"$avg": '$reviews.score'}
+                                     }}
+    ])
+
+    result = [data for data in average_ret]
+    return result[0].get("$avg")

@@ -67,10 +67,23 @@ def get_last_voyages(user_id: str, is_driver: bool):
                             status_code=400)
 
 
-@router.post('/review/')
-def add_review(review: ReviewBase):
+@router.post('/review/{voyage_id}/{caller_id}')
+def add_review(voyage_id: str,  caller_id: str, review: ReviewBase):
     """
     User Load A Review Of Voyage
     """
-    # TODO Check Ids make sense
-    voyages.add_review(db, review)
+    voyage = voyages.find_voyage(voyage_id)
+    if not voyage:
+        raise HTTPException(detail={'message': 'Non Existent Voyage'},
+                            status_code=400)
+
+    searched_id = "passenger_id"
+    if review.by_driver:
+        searched_id = "driver_id"
+
+    saved_id = voyage.get(searched_id)
+    if caller_id != saved_id:
+        raise HTTPException(detail={'message': 'User Not In Voyage Asked'},
+                            status_code=400)
+
+    voyages.add_review(db, voyage_id, review)

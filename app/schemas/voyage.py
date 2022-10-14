@@ -1,5 +1,4 @@
 from datetime import datetime
-from lib2to3.pgen2 import driver
 from pydantic import BaseModel
 from .common import Point
 from enum import Enum
@@ -60,20 +59,14 @@ class SearchVoyageBase(BaseModel):
 
 
 class ReviewBase(BaseModel):
-    voyage_id: str
-    puntaje: int
+    score: int
+    by_driver: bool
     comment: Optional[str]
-    passenger_id: str
-    driver_id: str
-    is_driver: bool
 
 
 class ComplaintBase(BaseModel):
-    voyage_id: str
     complaint_type: ComplaintType
     description: str
-    driver_id: str
-    passenger_id: str
 
 
 class VoyageBase(BaseModel):
@@ -86,5 +79,5 @@ class VoyageBase(BaseModel):
     is_vip: bool
     start_time: datetime
     end_time: datetime
-    reviews = List[ReviewBase] = []
-    complaints = List[ComplaintBase] = []
+    reviews: List[ReviewBase] = []
+    complaints: List[ComplaintBase] = []

@@ -2,7 +2,8 @@ from datetime import datetime
 from fastapi import APIRouter
 from fastapi.exceptions import HTTPException
 
-from ..schemas.voyage import PassengerBase, SearchVoyageBase, PassengerStatus
+from ..schemas.voyage import ComplaintBase, PassengerBase
+from ..schemas.voyage import SearchVoyageBase, PassengerStatus
 from ..schemas.voyage import VoyageBase, VoyageStatus
 from ..database.mongo import db
 from ..crud import drivers, passenger, voyages
@@ -114,7 +115,7 @@ def ask_for_voyage(id_driver: str, voyage: SearchVoyageBase):
 
         # send push notif to driver
 
-        return {"final_price": price, "voyage_id": str(id), "message":
+        return {"final_price": price, "voyage_id": id, "message":
                 "Waiting for Drivers answer."}
 
     except Exception as err:
@@ -130,3 +131,22 @@ def cancel_search(passenger_id: str):
     Passenger Cancels Voyage Search
     """
     passenger.change_status(db, passenger_id, PassengerStatus.CHOOSING.value)
+
+
+@router.post('/complaint/{voyage_id}/{caller_id}')
+def add_complaint(voyage_id: str,  caller_id: str, complaint: ComplaintBase):
+    """
+    Passenger Load A Complaint Of Voyage
+    """
+    voyage = voyages.find_voyage(voyage_id)
+    if not voyage:
+        raise HTTPException(detail={'message': 'Non Existent Voyage'},
+                            status_code=400)
+
+    saved_id = voyage.get("passenger_id")
+    if caller_id != saved_id:
+        raise HTTPException(detail={'message': 'Passenger Not In Voyage'},
+                            status_code=400)
+
+    voyages.add_complaint(db, voyage_id, complaint)
+    # Notify Admins
