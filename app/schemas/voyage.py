@@ -52,7 +52,7 @@ class PassengerBase(UserBase):
 
 
 class SearchVoyageBase(BaseModel):
-    passenger: PassengerBase
+    passenger_id: str
     init: Point
     end: Point
     is_vip: bool

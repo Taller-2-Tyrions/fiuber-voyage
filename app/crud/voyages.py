@@ -84,8 +84,11 @@ def get_date_voyages(db, user_id, is_driver, is_daily):
         {"$count": "amount"}
     ])
     results = [date for date in times]
-    print(results)
-    return results[0].get("amount")
+
+    if len(results) > 0:
+        return results[0].get("amount")
+    else:
+        return 0
 
 
 def get_seniority(db, id, is_driver):
@@ -100,7 +103,9 @@ def get_seniority(db, id, is_driver):
         {"$limit": 1}
     ])
     results = [date for date in first_date]
-    print(list(first_date))
+    if len(results) == 0:
+        return 0
+
     first_date_str = results[0].get("start_time")
 
     first_date = datetime.fromisoformat(first_date_str)
