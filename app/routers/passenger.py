@@ -15,15 +15,17 @@ router = APIRouter(
 )
 
 
-@router.post('/')
-def add_passenger(passenger: PassengerBase):
+@router.post('/{id_passenger}')
+def add_passenger(id_passenger: str):
     """
     Add Passenger To List
     """
     try:
+        location = common.Point(longitude=50.0, latitude=50.0)
+        person = voyage.PassengerBase(id=id_passenger, location=location,
+                                      status=PassengerStatus.CHOOSING.value,
+                                      is_vip=False)
         passenger.create_passenger(db, passenger)
-        passenger.change_status(db, passenger.id,
-                                PassengerStatus.CHOOSING.value)
     except Exception as err:
         raise HTTPException(detail={
             'message': 'There was an error adding the passenger '
@@ -125,7 +127,7 @@ def ask_for_voyage(id_driver: str, voyage: SearchVoyageBase):
             status_code=400)
 
 
-@router.delete('/search')
+@router.delete('/search/{passenger_id}')
 def cancel_search(passenger_id: str):
     """
     Passenger Cancels Voyage Search

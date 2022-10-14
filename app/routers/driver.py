@@ -13,14 +13,17 @@ router = APIRouter(
 )
 
 
-@router.post('/')
-def add_driver(driver: DriverBase):
+@router.post('/{id_driver}')
+def add_driver(id_driver: str):
     """
     Add Driver To List
     """
     try:
+        location = common.Point(longitude=50.0, latitude=50.0)
+        driver = voyage.DriverBase(id=id_driver, location=location,
+                                   status=DriverStatus.OFFLINE.value,
+                                   is_vip=False)
         drivers.create_driver(db, driver)
-        drivers.change_status(db, driver.id, DriverStatus.OFFLINE.value)
     except Exception as err:
         raise HTTPException(detail={
             'message': 'There was an error accessing the drivers database '
@@ -29,7 +32,7 @@ def add_driver(driver: DriverBase):
 
 
 @router.post('/searching/{driver_id}')
-def activate_driver(driver_id: str):
+def activate_driver(driver_id: str, location: Point):
     """
     An offline driver is set to searching
     """
@@ -48,6 +51,8 @@ def activate_driver(driver_id: str):
                             status_code=400)
 
     drivers.change_status(db, driver_id, DriverStatus.SEARCHING.value)
+    changes = {"location": location}
+    return drivers.update_driver(db, driver_id, changes)
 
 
 @router.post('/offline/{driver_id}')
