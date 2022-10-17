@@ -90,43 +90,42 @@ def ask_for_voyage(id_driver: str, voyage: SearchVoyageBase):
     """
     Passenger Chose a Driver.
     """
-    print("Hola ask")
     try:
         driver = drivers.find_driver(db, id_driver)
         price = pricing.price_voyage(voyage, driver)
         client = passenger.find_passenger(db, voyage.passenger_id)
-        is_vip = False
-        if voyage.is_vip and driver.get("is_vip") and client.get("is_vip"):
-            is_vip = True
-            price = pricing.add_vip_price(price)
-        elif voyage.is_vip:
-            raise HTTPException(detail={
-                                'message': 'Not Allowed For VIP voyage'},
-                                status_code=400)
-
-        confirmed_voyage = VoyageBase(passenger_id=voyage.passenger_id,
-                                      driver_id=id_driver, init=voyage.init,
-                                      end=voyage.end,
-                                      status=VoyageStatus.WAITING.value,
-                                      price=price,
-                                      start_time=datetime.utcnow(),
-                                      end_time=datetime.utcnow(),
-                                      is_vip=is_vip)
-
-        id = voyages.create_voyage(db, confirmed_voyage)
-        drivers.set_waiting_status(db, id_driver)
-        passenger.set_waiting_confirmation_status(db, voyage.passenger_id)
-
-        # send push notif to driver
-
-        return {"final_price": price, "voyage_id": id, "message":
-                "Waiting for Drivers answer."}
-
     except Exception as err:
         raise HTTPException(detail={
             'message': 'There was an error choosing the driver. '
             + str(err)},
             status_code=400)
+
+    is_vip = False
+    if voyage.is_vip and driver.get("is_vip") and client.get("is_vip"):
+        is_vip = True
+        price = pricing.add_vip_price(price)
+    elif voyage.is_vip:
+        raise HTTPException(detail={
+                            'message': 'Not Allowed For VIP voyage'},
+                            status_code=400)
+
+    confirmed_voyage = VoyageBase(passenger_id=voyage.passenger_id,
+                                  driver_id=id_driver, init=voyage.init,
+                                  end=voyage.end,
+                                  status=VoyageStatus.WAITING.value,
+                                  price=price,
+                                  start_time=datetime.utcnow(),
+                                  end_time=datetime.utcnow(),
+                                  is_vip=is_vip)
+
+    id = voyages.create_voyage(db, confirmed_voyage)
+    drivers.set_waiting_status(db, id_driver)
+    passenger.set_waiting_confirmation_status(db, voyage.passenger_id)
+
+    # send push notif to driver
+
+    return {"final_price": price, "voyage_id": id, "message":
+            "Waiting for Drivers answer."}
 
 
 @router.delete('/search/{passenger_id}')

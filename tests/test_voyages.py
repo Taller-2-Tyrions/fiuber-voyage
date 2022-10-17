@@ -251,3 +251,12 @@ def test_get_average():
     passenger_avg = voyages.get_average_score(db, driver_id,
                                               is_driver=True)
     assert (passenger_avg == 0)
+
+
+def test_get_average_no_voyages():
+    db = mongomock.MongoClient().db
+    passenger_id = "19"
+
+    with pytest.raises(IndexError):
+        voyages.get_average_score(db, passenger_id,
+                                  is_driver=False)
