@@ -67,6 +67,21 @@ def get_last_voyages(user_id: str, is_driver: bool):
                             status_code=400)
 
 
+@router.get('/calification/{user_id}/{is_driver}')
+def get_calification(user_id: str, is_driver: bool):
+    """
+    Get User Global calification
+    """
+    # try:
+    return {"calification":
+            voyages.get_average_score(db, user_id, is_driver)}
+    # except Exception as err:
+    #     raise HTTPException(detail={
+    #         'message': 'There was an error accessing the drivers database '
+    #         + str(err)},
+    #         status_code=400)
+
+
 @router.post('/review/{voyage_id}/{caller_id}')
 def add_review(voyage_id: str,  caller_id: str, review: ReviewBase):
     """

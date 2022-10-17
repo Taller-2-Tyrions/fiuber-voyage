@@ -163,4 +163,6 @@ def get_average_score(db, user_id, is_driver):
     ])
 
     result = [data for data in average_ret]
-    return result[0].get("$avg")
+
+    average = result[0].get("$avg")
+    return average
