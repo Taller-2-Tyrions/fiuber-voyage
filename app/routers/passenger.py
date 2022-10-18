@@ -10,7 +10,7 @@ from ..schemas.voyage import VoyageBase, VoyageStatus
 from ..database.mongo import db
 from ..crud import drivers, passenger, voyages
 from ..prices import pricing
-from ..firebase_notif.firebase import notify
+from ..firebase_notif import firebase as notifications
 
 router = APIRouter(
     prefix="/voyage/passenger",
@@ -131,7 +131,7 @@ def ask_for_voyage(id_driver: str, voyage: SearchVoyageBase):
     drivers.set_waiting_status(db, id_driver)
     passenger.set_waiting_confirmation_status(db, voyage.passenger_id)
 
-    notify(id_driver, "che te estan buscando")
+    notifications.passenger_choosing(id_driver, confirmed_voyage)
 
     return {"final_price": price, "voyage_id": id, "message":
             "Waiting for Drivers answer."}
