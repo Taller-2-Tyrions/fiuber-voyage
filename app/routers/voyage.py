@@ -104,3 +104,63 @@ def add_review(voyage_id: str,  caller_id: str, review: ReviewBase):
                             status_code=400)
 
     voyages.add_review(db, voyage_id, review)
+
+
+@router.get('/status/{user_id}')
+def get_status(user_id: str):
+    """
+    Return the last state the user was in
+    """
+    driver = drivers.find_driver(db, user_id)
+    client = passenger.find_passenger(db, user_id)
+
+    if not client and not driver:
+        raise HTTPException(detail={'message': 'User Not Loaded'},
+                            status_code=400)
+
+    if driver and client:
+        client_status = client.get("status")
+        driver_status = driver.get("status")
+
+        is_driver = driver_status != DriverStatus.OFFLINE.value
+        is_passenger = client_status != PassengerStatus.CHOOSING.value
+
+        if is_driver and is_passenger:
+            raise HTTPException(detail={'message': 'User Badly Closed'},
+                                status_code=400)
+    else:
+        is_driver = client is None
+
+    if not is_driver:
+        status = client.get("status")
+        is_choosing = status == PassengerStatus.CHOOSING.value
+
+        if not is_choosing:
+            id_voyage = voyages.get_current_voyage(db, user_id,
+                                                   is_driver=False)
+            return {"Rol": "Passenger", "Status": status, "Voyage": id_voyage}
+        else:
+            return {"Rol": "Passenger", "Status": status}
+    else:
+        status = driver.get("status")
+        is_searching = status == DriverStatus.SEARCHING.value
+        is_offline = status == DriverStatus.OFFLINE.value
+
+        if not is_searching and not is_offline:
+            id_voyage = voyages.get_current_voyage(db, user_id,
+                                                   is_driver=True)
+            return {"Rol": "Driver", "Status": status, "Voyage": id_voyage}
+        else:
+            return {"Rol": "Driver", "Status": status}
+
+
+@router.get('/{voyage_id}')
+def get_voyage_info(voyage_id: str):
+    """
+    Return The info of voyage asked
+    """
+    try:
+        return voyages.find_voyage(db, voyage_id)
+    except Exception:
+        raise HTTPException(detail={'message': "Can't Access Database"},
+                            status_code=400)
