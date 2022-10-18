@@ -226,9 +226,9 @@ def test_get_average():
     location_end = common.Point(longitude=51, latitude=50.4)
 
     today = datetime.utcnow()
+    driver_id = "vsdv"
 
     for i in range(0, 3):
-        driver_id = str(i)
         voyage_test = VoyageBase(passenger_id=passenger_id,
                                  driver_id=driver_id,
                                  init=location_init,
@@ -237,26 +237,26 @@ def test_get_average():
                                  price=10, start_time=today,
                                  end_time=datetime.utcnow(), is_vip=True)
         id = voyages.create_voyage(db, voyage_test)
-        review = ReviewBase(score=3, by_driver=True,
+        review = ReviewBase(score=i, by_driver=True,
                             comment="Todo Muy Lindo")
         voyages.add_review(db, id, review)
-        review = ReviewBase(score=0, by_driver=False,
+        review = ReviewBase(score=i+1, by_driver=False,
                             comment="Muy Mala Onda")
         voyages.add_review(db, id, review)
 
-    passenger_avg = voyages.get_average_score(db, passenger_id,
-                                              is_driver=False)
-    assert (passenger_avg == 3)
+    # passenger_avg = voyages.get_average_score(db, passenger_id,
+    #                                           is_driver=False)
+    # assert (passenger_avg == 1)
 
     passenger_avg = voyages.get_average_score(db, driver_id,
                                               is_driver=True)
-    assert (passenger_avg == 0)
+    assert (passenger_avg == 2)
 
 
 def test_get_average_no_voyages():
     db = mongomock.MongoClient().db
     passenger_id = "19"
 
-    with pytest.raises(IndexError):
+    with pytest.raises(Exception):
         voyages.get_average_score(db, passenger_id,
                                   is_driver=False)
