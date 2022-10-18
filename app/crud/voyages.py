@@ -169,3 +169,25 @@ def get_average_score(db, user_id, is_driver):
 
     average = result[0].get("promedio")
     return average
+
+
+def get_current_voyage(db, user_id, is_driver):
+    id_parameter = "passenger_id"
+    if is_driver:
+        id_parameter = "driver_id"
+
+    last_voyage = db.voyage.aggregate([
+        {"$match": {"$and": [
+            {"status": {"$ne": VoyageStatus.FINISHED.value}},
+            {id_parameter: {"$eq": user_id}}
+            ]}
+         },
+    ])
+
+    result = [data for data in last_voyage]
+
+    if len(result) == 0:
+        raise Exception("Id Not Found In Any Voyage")
+
+    id = result[0].get("_id")
+    return str(id)
