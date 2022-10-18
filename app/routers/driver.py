@@ -105,7 +105,7 @@ def locate_driver(driver_id: str, location: Point):
 
 @router.get("/location/{driver_id}")
 def get_loc(driver_id: str):
-    return {"location": drivers.get_location(driver_id)}
+    return {"location": drivers.get_location(db, driver_id)}
 
 
 @router.post('/reply/{id_voyage}/{status}/{driver_id}')
