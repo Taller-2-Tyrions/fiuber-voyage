@@ -158,11 +158,14 @@ def get_average_score(db, user_id, is_driver):
                                      "_id": {
                                         "user_id": "$"+id_parameter,
                                      },
-                                     "$avg": {"$avg": '$reviews.score'}
+                                     "promedio": {"$avg": '$reviews.score'}
                                      }}
     ])
 
     result = [data for data in average_ret]
 
-    average = result[0].get("$avg")
+    if len(result) == 0:
+        raise Exception("Id Not Found In Any Voyage")
+
+    average = result[0].get("promedio")
     return average
