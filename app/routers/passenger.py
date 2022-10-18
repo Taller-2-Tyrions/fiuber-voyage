@@ -3,7 +3,7 @@ from fastapi import APIRouter
 from fastapi.exceptions import HTTPException
 
 from app.schemas.common import Point
-
+from fastapi.encoders import jsonable_encoder
 from ..schemas.voyage import ComplaintBase, DriverStatus, PassengerBase
 from ..schemas.voyage import SearchVoyageBase, PassengerStatus
 from ..schemas.voyage import VoyageBase, VoyageStatus
@@ -131,7 +131,8 @@ def ask_for_voyage(id_driver: str, voyage: SearchVoyageBase):
     drivers.set_waiting_status(db, id_driver)
     passenger.set_waiting_confirmation_status(db, voyage.passenger_id)
 
-    notifications.passenger_choosing(id_driver, confirmed_voyage)
+    notifications.passenger_choosing(id_driver,
+                                     jsonable_encoder(confirmed_voyage))
 
     return {"final_price": price, "voyage_id": id, "message":
             "Waiting for Drivers answer."}
