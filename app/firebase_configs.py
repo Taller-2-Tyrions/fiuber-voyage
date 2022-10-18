@@ -18,7 +18,7 @@ def load_firebase():
     cred = credentials.Certificate("firebasekey.json")
 
     firebase_admin.initialize_app(cred, {
-                'databaseURL': "https://fiuber-36b86-default-rtdb.firebaseio.com/"
+            'databaseURL': "https://fiuber-36b86-default-rtdb.firebaseio.com/"
     })
     firebaseConfig = {
         "apiKey": "AIzaSyBSenFicB4rNCqRO183gmoMILDImbTR84Y",
