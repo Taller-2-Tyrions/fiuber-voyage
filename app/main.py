@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from .routers import voyage, driver, passenger
 from fastapi.middleware.cors import CORSMiddleware
-
+from .firebase_configs import load_firebase
 
 app = FastAPI()
 
@@ -22,6 +22,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+load_firebase()
 
 app.include_router(voyage.router)
 app.include_router(driver.router)

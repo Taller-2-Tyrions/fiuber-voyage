@@ -5,6 +5,8 @@ from ..schemas.voyage import PassengerStatus, ReviewBase
 from ..schemas.voyage import DriverStatus, VoyageStatus
 from ..database.mongo import db
 from ..crud import drivers, passenger, voyages
+from ..firebase_notif import firebase as notifications
+
 
 router = APIRouter(
     prefix="/voyage",
@@ -43,11 +45,11 @@ def cancel_confirmed_voyage(voyage_id: str, caller_id: str):
         if is_passenger:
             print("Multado")
             # TODO Cobrar Multa
-            # Push Notification A Driver
+            notifications.passenger_cancelled(driver_id)
         else:
             print("Beneficiado?")
             # TODO Devolver Plata?
-            # Push Notification A User
+            notifications.driver_cancelled(passenger_id)
     else:
         raise HTTPException(detail={'message': 'Non Cancellable Voyage '},
                             status_code=400)

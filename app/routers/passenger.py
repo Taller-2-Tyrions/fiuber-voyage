@@ -4,12 +4,13 @@ from fastapi.exceptions import HTTPException
 
 from app.schemas.common import Point
 
-from ..schemas.voyage import ComplaintBase, PassengerBase
+from ..schemas.voyage import ComplaintBase, DriverStatus, PassengerBase
 from ..schemas.voyage import SearchVoyageBase, PassengerStatus
 from ..schemas.voyage import VoyageBase, VoyageStatus
 from ..database.mongo import db
 from ..crud import drivers, passenger, voyages
 from ..prices import pricing
+from ..firebase_notif import firebase as notifications
 
 router = APIRouter(
     prefix="/voyage/passenger",
@@ -117,12 +118,20 @@ def ask_for_voyage(id_driver: str, voyage: SearchVoyageBase):
                                   start_time=datetime.utcnow(),
                                   end_time=datetime.utcnow(),
                                   is_vip=is_vip)
+    if driver.get("status") != DriverStatus.SEARCHING.value:
+        raise HTTPException(detail={
+                            'message': 'Driver not available'},
+                            status_code=400)
+    if client.get("status") != PassengerStatus.CHOOSING.value:
+        raise HTTPException(detail={
+                            'message': 'Passenger not available'},
+                            status_code=400)
 
     id = voyages.create_voyage(db, confirmed_voyage)
     drivers.set_waiting_status(db, id_driver)
     passenger.set_waiting_confirmation_status(db, voyage.passenger_id)
 
-    # send push notif to driver
+    notifications.passenger_choosing(id_driver, confirmed_voyage)
 
     return {"final_price": price, "voyage_id": id, "message":
             "Waiting for Drivers answer."}

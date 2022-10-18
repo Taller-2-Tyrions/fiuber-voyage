@@ -6,6 +6,8 @@ from ..schemas.voyage import DriverBase, PassengerStatus
 from ..schemas.voyage import DriverStatus
 from ..database.mongo import db
 from ..crud import drivers, passenger, voyages
+from ..firebase_notif import firebase as notifications
+
 
 router = APIRouter(
     prefix="/voyage/driver",
@@ -108,23 +110,24 @@ def accept_voyage(id_voyage: str, status: bool, driver_id: str):
     """
 
     voyage = voyages.find_voyage(db, id_voyage)
+    passenger_id = voyage.get("passenger_id")
     if not voyage:
         raise HTTPException(detail={'message': 'Non Existent Voyage'},
                             status_code=400)
     try:
         if status:
-            passenger.set_waiting_driver_status(db, voyage.get("passenger_id"))
+            passenger.set_waiting_driver_status(db, passenger_id)
             drivers.set_going_status(db, driver_id)
             voyages.set_starting_status(db, id_voyage)
-            # push notification
+            notifications.notify_driver_accepted(passenger_id, voyage)
         else:
             voyages.delete_voyage(db, id_voyage)
-            passenger.change_status(db, voyage.get("passenger_id"),
+            passenger.change_status(db, passenger_id,
                                     PassengerStatus.CHOOSING.value)
             drivers.change_status(db, driver_id, DriverStatus.SEARCHING.value)
-            # push notif al passenger
+            notifications.notify_driver_declined(passenger_id, voyage)
     except Exception as err:
-        passenger.change_status(db, voyage.get("passenger_id"),
+        passenger.change_status(db, passenger_id,
                                 PassengerStatus.CHOOSING.value)
         drivers.change_status(db, driver_id, DriverStatus.SEARCHING.value)
         voyages.delete_voyage(db, id_voyage)
@@ -152,6 +155,7 @@ def inform_start_voyage(voyage_id: str, caller_id: str):
     voyages.set_travelling_status(db, voyage_id)
     drivers.set_travelling_status(db, driver_id)
     passenger.set_travelling_status(db, passenger_id)
+    notifications.notify_has_started(passenger_id)
 
 
 @router.post('/end/{voyage_id}/{caller_id}')
@@ -173,3 +177,4 @@ def inform_finish_voyage(voyage_id: str, caller_id: str):
     voyages.set_finished_status(db, voyage_id)
     drivers.change_status(db, driver_id, DriverStatus.SEARCHING.value)
     passenger.change_status(db, passenger_id, PassengerStatus.CHOOSING.value)
+    notifications.notify_has_finished(passenger_id)
