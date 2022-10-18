@@ -103,6 +103,11 @@ def locate_driver(driver_id: str, location: Point):
     return drivers.update_driver(db, driver_id, changes)
 
 
+@router.get("/location/{driver_id}")
+def get_loc(driver_id: str):
+    return {"location": drivers.get_location(driver_id)}
+
+
 @router.post('/reply/{id_voyage}/{status}/{driver_id}')
 def accept_voyage(id_voyage: str, status: bool, driver_id: str):
     """
