@@ -1,4 +1,3 @@
-from ast import Pass
 from fastapi import APIRouter
 from fastapi.exceptions import HTTPException
 
@@ -154,3 +153,14 @@ def get_status(user_id: str):
         else:
             return {"Rol": "Driver", "Status": status}
 
+
+@router.get('/{voyage_id}')
+def get_voyage_info(voyage_id: str):
+    """
+    Return The info of voyage asked
+    """
+    try:
+        return voyages.find_voyage(db, voyage_id)
+    except Exception:
+        raise HTTPException(detail={'message': "Can't Access Database"},
+                            status_code=400)
