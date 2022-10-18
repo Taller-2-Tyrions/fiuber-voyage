@@ -3,6 +3,7 @@ from ..schemas.pricing import PriceRequest
 from ..schemas.voyage import DriverBase, SearchVoyageBase
 from ..schemas.common import Point
 from datetime import datetime, time
+from ..crud import drivers
 
 from ..database.mongo import db
 
@@ -195,5 +196,6 @@ def get_voyage_info(voyage, near_drivers, is_vip):
         if is_vip:
             price = add_vip_price(price)
         prices.update({id: price})
+        prices.update({"location": drivers.get_location(id)})
 
     return prices
