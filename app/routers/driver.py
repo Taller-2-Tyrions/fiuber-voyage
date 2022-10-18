@@ -69,10 +69,10 @@ def deactivate_driver(driver_id: str):
 
     status = driver.get("status")
 
-    is_offline = status == DriverStatus.OFFLINE.value
-    is_searching = status == DriverStatus.SEARCHING.value
+    is_going = status == DriverStatus.GOING.value
+    is_travelling = status == DriverStatus.TRAVELLING.value
 
-    if not is_offline and not is_searching:
+    if is_going or is_travelling:
         raise HTTPException(detail={'message': "Can't Change To Offline"},
                             status_code=400)
 
