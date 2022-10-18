@@ -196,6 +196,6 @@ def get_voyage_info(voyage, near_drivers, is_vip):
         if is_vip:
             price = add_vip_price(price)
         prices.update({id: price})
-        prices.update({"location": drivers.get_location(id)})
+        prices.update({"location": drivers.get_location(db, id)})
 
     return prices

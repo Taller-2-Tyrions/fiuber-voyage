@@ -83,3 +83,7 @@ def update_driver(db, driver_id: str, changes):
                                                      {"$set": changes},
                                                      return_document=after)
     return set_return_value(driver_found)
+
+
+def get_location(db, driver_id):
+    return find_driver(db, driver_id).get("location")
