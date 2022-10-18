@@ -91,13 +91,21 @@ def ask_for_voyage(id_driver: str, voyage: SearchVoyageBase):
     """
     Passenger Chose a Driver.
     """
+    driver = drivers.find_driver(db, id_driver)
+    if not driver:
+        raise HTTPException(detail={
+                            'message': 'Driver Not Found'},
+                            status_code=400)
+    client = passenger.find_passenger(db, voyage.passenger_id)
+    if not client:
+        raise HTTPException(detail={
+                            'message': 'Passenger Not Found'},
+                            status_code=400)
     try:
-        driver = drivers.find_driver(db, id_driver)
         price = pricing.price_voyage(voyage, driver)
-        client = passenger.find_passenger(db, voyage.passenger_id)
     except Exception as err:
         raise HTTPException(detail={
-            'message': 'There was an error choosing the driver. '
+            'message': 'There was an error getting the price. '
             + str(err)},
             status_code=400)
 
