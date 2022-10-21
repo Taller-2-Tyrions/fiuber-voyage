@@ -257,6 +257,6 @@ def test_get_average_no_voyages():
     db = mongomock.MongoClient().db
     passenger_id = "19"
 
-    with pytest.raises(Exception):
-        voyages.get_average_score(db, passenger_id,
-                                  is_driver=False)
+    passenger_avg = voyages.get_average_score(db, passenger_id,
+                                              is_driver=False)
+    assert (passenger_avg == "No Calification")

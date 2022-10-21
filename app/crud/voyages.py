@@ -165,10 +165,47 @@ def get_average_score(db, user_id, is_driver):
     result = [data for data in average_ret]
 
     if len(result) == 0:
-        raise Exception("Id Not Found In Any Voyage")
+        return "No Calification"
 
     average = result[0].get("promedio")
     return average
+
+
+def get_reviews(db, user_id, is_driver, count):
+    id_parameter = "passenger_id"
+    if is_driver:
+        id_parameter = "driver_id"
+
+    by_driver = not is_driver
+
+    last_reviews = db.voyage.aggregate([
+                                {"$unwind": "$reviews"},
+                                {"$match": {"$and": [
+                                    {id_parameter: {"$eq": user_id}},
+                                    {"reviews.by_driver": {"$eq": by_driver}}
+                                    ]}},
+                                {"$sort": {"start_time": -1}},
+                                {"$limit": count},
+                                {"$project": {"reviews": 1, "_id": 0}}
+    ])
+    result = [data for data in last_reviews]
+    return result
+
+
+def get_number_voyages(db, user_id, is_driver):
+    id_parameter = "passenger_id"
+    if is_driver:
+        id_parameter = "driver_id"
+
+    count_voyages = db.voyage.aggregate([
+                                {"$match":
+                                    {id_parameter: {"$eq": user_id}}},
+                                {"$count": "count"}
+    ])
+    result = [data for data in count_voyages]
+    if len(result) == 0:
+        return 0
+    return result[0].get("count")
 
 
 def get_current_voyage(db, user_id, is_driver):

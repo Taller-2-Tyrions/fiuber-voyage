@@ -84,6 +84,21 @@ def get_calification(user_id: str, is_driver: bool):
             status_code=400)
 
 
+@router.get('/count/{user_id}/{is_driver}')
+def get_count(user_id: str, is_driver: bool):
+    """
+    Get User Cuantity of Voyages
+    """
+    try:
+        return {"count":
+                voyages.get_number_voyages(db, user_id, is_driver)}
+    except Exception as err:
+        raise HTTPException(detail={
+            'message': 'There was an error accessing the database '
+            + str(err)},
+            status_code=400)
+
+
 @router.post('/review/{voyage_id}/{caller_id}')
 def add_review(voyage_id: str,  caller_id: str, review: ReviewBase):
     """
@@ -104,6 +119,21 @@ def add_review(voyage_id: str,  caller_id: str, review: ReviewBase):
                             status_code=400)
 
     voyages.add_review(db, voyage_id, review)
+
+
+@router.get('/review/{user_id}/{is_driver}')
+def get_last_reviews(user_id: str, is_driver: bool, number: int = 5):
+    """
+    Get User Last Reviews
+    """
+    try:
+        return {"reviews":
+                voyages.get_reviews(db, user_id, is_driver, number)}
+    except Exception as err:
+        raise HTTPException(detail={
+            'message': 'There was an error accessing the database '
+            + str(err)},
+            status_code=400)
 
 
 @router.get('/status/{user_id}')
