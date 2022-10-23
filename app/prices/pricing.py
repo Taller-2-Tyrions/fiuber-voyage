@@ -42,19 +42,22 @@ def is_status_correct(status_code):
     return status_code//100 == 2
 
 
-def distance_to(origin_point, dest_point):
+def distance_to(_origin_point, _dest_point):
+    origin_point = str(_origin_point.latitude) + ',' + str(_origin_point.longitude)
+    dest_point = str(_dest_point.latitude) + ',' + str(_dest_point.longitude)
+    
     resp = requests.get(GOOGLE_MAPS_URL+"?origins=" + origin_point +
                         "&destinations=" + dest_point +
                         "&unit=km&key=" + GOOGLE_MAPS_API_KEY)
     if (not is_status_correct(resp.status_code)):
+        print("Error in Google Maps Services: pricing::distance_to")
         raise HTTPException(detail={
                     'message': resp.reason
                 }, status_code=500)
 
-    resp_json = jsonable_encoder(resp)
-    print(resp_json)
-    distance_in_meters = resp_json['rows'][0]['elements'][0]['distance'].value
-    print(distance_in_meters)
+    resp_json = resp.json()
+    distance_in_meters = resp_json['rows'][0]['elements'][0]['distance']['value']
+    
     return distance_in_meters
 
 

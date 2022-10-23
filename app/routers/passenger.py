@@ -171,3 +171,18 @@ def add_complaint(voyage_id: str,  caller_id: str, complaint: ComplaintBase):
 
     voyages.add_complaint(db, voyage_id, complaint)
     # Notify Admins
+
+@router.get('/test/{_origin_point}/{_dest_point}')
+def testDistance(_origin_point: str, _dest_point: str):
+    print(_origin_point)
+    print(_dest_point)
+    op = _origin_point.split(",")[0]
+    op2 = _origin_point.split(",")[1]
+    dp = _dest_point.split(",")[0]
+    dp2 = _dest_point.split(",")[1]
+    origin_point = Point(longitude= float(op2), latitude= float(op))
+    dest_point = Point(longitude=float(dp2), latitude= float(dp))
+    
+    d = pricing.distance_to(origin_point, dest_point)
+    print("distance: "+str(d))
+    return d
