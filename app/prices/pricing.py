@@ -1,7 +1,6 @@
 import requests
 import os
 from fastapi.exceptions import HTTPException
-from fastapi.encoders import jsonable_encoder
 
 from datetime import datetime, time
 
@@ -43,9 +42,9 @@ def is_status_correct(status_code):
 
 
 def distance_to(_origin_point, _dest_point):
-    origin_point = str(_origin_point.latitude) + ',' + str(_origin_point.longitude)
-    dest_point = str(_dest_point.latitude) + ',' + str(_dest_point.longitude)
-    
+    origin_point = str(_origin_point.latitude)+','+str(_origin_point.longitude)
+    dest_point = str(_dest_point.latitude)+','+str(_dest_point.longitude)
+
     resp = requests.get(GOOGLE_MAPS_URL+"?origins=" + origin_point +
                         "&destinations=" + dest_point +
                         "&unit=km&key=" + GOOGLE_MAPS_API_KEY)
@@ -56,9 +55,9 @@ def distance_to(_origin_point, _dest_point):
                 }, status_code=500)
 
     resp_json = resp.json()
-    distance_in_meters = resp_json['rows'][0]['elements'][0]['distance']['value']
-    
-    return distance_in_meters
+    distance_in_mts = resp_json['rows'][0]['elements'][0]['distance']['value']
+
+    return distance_in_mts
 
 
 def time_to(point_a, point_b):
