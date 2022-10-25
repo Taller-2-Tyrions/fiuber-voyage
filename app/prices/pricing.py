@@ -1,3 +1,7 @@
+import requests
+import os
+from fastapi.exceptions import HTTPException
+
 from datetime import datetime, time
 
 from app.crud import voyages
@@ -29,12 +33,31 @@ NIGHT_END = time(6, 0)
 AVERAGE_DRIVER_PRICE = 10
 AVERAGE_TIME_AWAIT = 10
 
+GOOGLE_MAPS_URL = os.getenv("GOOGLE_MAPS_URL")
+GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
 
-def distance_to(point_a, point_b):
-    latitude_dist = abs(point_a.latitude - point_b.latitude)
-    longitude_dist = abs(point_a.longitude - point_b.longitude)
 
-    return latitude_dist + longitude_dist
+def is_status_correct(status_code):
+    return status_code//100 == 2
+
+
+def distance_to(_origin_point, _dest_point):
+    origin_point = str(_origin_point.latitude)+','+str(_origin_point.longitude)
+    dest_point = str(_dest_point.latitude)+','+str(_dest_point.longitude)
+
+    resp = requests.get(GOOGLE_MAPS_URL+"?origins=" + origin_point +
+                        "&destinations=" + dest_point +
+                        "&unit=km&key=" + GOOGLE_MAPS_API_KEY)
+    if (not is_status_correct(resp.status_code)):
+        print("Error in Google Maps Services: pricing::distance_to")
+        raise HTTPException(detail={
+                    'message': resp.reason
+                }, status_code=500)
+
+    resp_json = resp.json()
+    distance_in_mts = resp_json['rows'][0]['elements'][0]['distance']['value']
+
+    return distance_in_mts
 
 
 def time_to(point_a, point_b):
