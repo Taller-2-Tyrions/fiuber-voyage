@@ -60,7 +60,7 @@ def activate_driver(driver_id: str, location: Point):
 @router.post('/offline/{driver_id}')
 def deactivate_driver(driver_id: str):
     """
-    A Seaching driver is set to Offline
+    A Searching/Waiting driver is set to Offline
     """
     driver = drivers.find_driver(db, driver_id)
     if not driver:
