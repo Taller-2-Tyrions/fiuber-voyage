@@ -1,8 +1,9 @@
 from datetime import datetime
 from fastapi import APIRouter
 from fastapi.exceptions import HTTPException
-from fastapi.encoders import jsonable_encoder
+
 from app.schemas.common import Point
+from fastapi.encoders import jsonable_encoder
 from ..schemas.voyage import ComplaintBase, DriverStatus, PassengerBase
 from ..schemas.voyage import SearchVoyageBase, PassengerStatus
 from ..schemas.voyage import VoyageBase, VoyageStatus
@@ -10,9 +11,6 @@ from ..database.mongo import db
 from ..crud import drivers, passenger, voyages
 from ..prices import pricing
 from ..firebase_notif import firebase as notifications
-
-import json
-
 
 router = APIRouter(
     prefix="/voyage/passenger",
@@ -141,14 +139,8 @@ def ask_for_voyage(id_driver: str, voyage: SearchVoyageBase):
     drivers.set_waiting_status(db, id_driver)
     passenger.set_waiting_confirmation_status(db, voyage.passenger_id)
 
-    str_vc = str({"voyage_id": id, "voyage_confirmation": confirmed_voyage})
-
-    print("str_vc: "+str_vc)
-
-    voyage_notification = json.loads(str_vc)
-
     notifications.passenger_choosing(id_driver,
-                                     jsonable_encoder(voyage_notification))
+                                     jsonable_encoder(confirmed_voyage))
 
     return {"final_price": price, "voyage_id": id, "message":
             "Waiting for Drivers answer."}
