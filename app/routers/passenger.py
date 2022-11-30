@@ -13,6 +13,7 @@ from ..firebase_notif import firebase as notifications
 
 import json
 
+
 router = APIRouter(
     prefix="/voyage/passenger",
     tags=['Voyage Passenger']
