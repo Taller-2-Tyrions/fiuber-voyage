@@ -139,8 +139,12 @@ def ask_for_voyage(id_driver: str, voyage: SearchVoyageBase):
     drivers.set_waiting_status(db, id_driver)
     passenger.set_waiting_confirmation_status(db, voyage.passenger_id)
 
-    notifications.passenger_choosing(id_driver,
-                                     jsonable_encoder(confirmed_voyage))
+    json_confirmed_voyage = jsonable_encoder(confirmed_voyage)
+    voyage_noti = str({"voyage_id": id,
+                       "voyage_confirmation": json_confirmed_voyage})
+    print("str_vc: "+voyage_noti)
+
+    notifications.passenger_choosing(id_driver, voyage_noti)
 
     return {"final_price": price, "voyage_id": id, "message":
             "Waiting for Drivers answer."}
