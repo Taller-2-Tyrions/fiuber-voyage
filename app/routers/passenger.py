@@ -5,7 +5,6 @@ from fastapi.exceptions import HTTPException
 from fastapi.encoders import jsonable_encoder
 
 from app.schemas.common import Point
-from fastapi.encoders import jsonable_encoder
 from ..schemas.voyage import ComplaintBase, DriverStatus, PassengerBase
 from ..schemas.voyage import SearchVoyageBase, PassengerStatus
 from ..schemas.voyage import VoyageBase, VoyageStatus
@@ -147,7 +146,8 @@ def ask_for_voyage(id_driver: str, voyage: SearchVoyageBase):
         price_request = get_price_request(voyage, driver, is_vip)
         print(price_request)
 
-        price = requests.post(PRICING_URL+"pricing/voyage", jsonable_encoder(price_request))
+        price = requests.post(PRICING_URL+"pricing/voyage",
+                              jsonable_encoder(price_request))
     except Exception as err:
         raise HTTPException(detail={
             'message': 'There was an error getting the price. '
