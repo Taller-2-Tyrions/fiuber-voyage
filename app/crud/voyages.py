@@ -228,3 +228,11 @@ def get_current_voyage(db, user_id, is_driver):
 
     id = result[0].get("_id")
     return str(id)
+
+
+def get_history(db, id, is_driver):
+    seniority = get_seniority(db, id, is_driver)
+    daily = get_date_voyages(db, id, is_driver, True)
+    monthly = get_date_voyages(db, id, is_driver, False)
+
+    return seniority, daily, monthly

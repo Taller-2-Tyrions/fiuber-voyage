@@ -1,16 +1,25 @@
+import requests
 from datetime import datetime
-from fastapi import APIRouter
+from fastapi import APIRouter, status
 from fastapi.exceptions import HTTPException
+from fastapi.encoders import jsonable_encoder
 
 from app.schemas.common import Point
-from fastapi.encoders import jsonable_encoder
 from ..schemas.voyage import ComplaintBase, DriverStatus, PassengerBase
 from ..schemas.voyage import SearchVoyageBase, PassengerStatus
 from ..schemas.voyage import VoyageBase, VoyageStatus
+from ..schemas.pricing import PriceDriverBase, PriceUserBase, PriceVoyageBase
+from ..schemas.pricing import PriceRequestsBase, PriceRequestBase
 from ..database.mongo import db
 from ..crud import drivers, passenger, voyages
-from ..prices import pricing
 from ..firebase_notif import firebase as notifications
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+PRICING_URL = os.getenv("PRICING_URL")
+
 
 router = APIRouter(
     prefix="/voyage/passenger",
@@ -56,34 +65,59 @@ def search_near_drivers(voyage: SearchVoyageBase):
     """
     Passenger Search For All Nearest Drivers
     """
-    try:
-        location_searched = [voyage.init.longitude, voyage.init.latitude]
-        near_drivers = drivers.get_nearest_drivers(db, location_searched)
-        vip_prices = {}
-        if voyage.is_vip:
-            vip_drivers = drivers.get_nearest_drivers_vip(db,
-                                                          location_searched)
-            vip_prices = pricing.get_voyage_info(voyage,
-                                                 vip_drivers, True)
+    # try:
+    location_searched = [voyage.init.longitude, voyage.init.latitude]
+    near_drivers = drivers.get_nearest_drivers(db, location_searched)
+    vip_prices = {}
 
-        prices = pricing.get_voyage_info(voyage, near_drivers, False)
+    base_url = PRICING_URL+"pricing/voyages"
+    print(base_url)
+    print(near_drivers)
 
-        final_prices = {}
+    if voyage.is_vip:
+        vip_drivers = drivers.get_nearest_drivers_vip(db,
+                                                      location_searched)
 
-        for driver, price in prices.items():
-            final_prices.update({driver: {"Standard": price}})
+        price_request = get_price_requests(voyage, vip_drivers, True)
 
-        for driver, price in vip_prices.items():
-            before = final_prices.get(driver, {})
-            before.update({"VIP": price})
-            final_prices.update({driver: before})
+        print(price_request)
 
-        return final_prices
-    except Exception as err:
-        raise HTTPException(detail={
-            'message': 'There was an error searching drivers '
-            + str(err)},
-            status_code=400)
+        req = requests.post(base_url, jsonable_encoder(price_request))
+        data = req.json()
+        print(data)
+        if (req.status_code != status.HTTP_200_OK):
+            raise HTTPException(detail=data["detail"],
+                                status_code=req.status_code)
+        vip_prices = data
+        print(vip_prices)
+
+    price_request = get_price_requests(voyage, near_drivers, False)
+    print(price_request)
+
+    req = requests.post(base_url, jsonable_encoder(price_request))
+    data = req.json()
+    print(data)
+    if (req.status_code != status.HTTP_200_OK):
+        raise HTTPException(detail=data["detail"],
+                            status_code=req.status_code)
+    prices = data
+
+    final_prices = {}
+
+    for driver, price in prices.items():
+        final_prices.update({driver: {"Standard": price}})
+
+    for driver, price in vip_prices.items():
+        before = final_prices.get(driver, {})
+        before.update({"VIP": price})
+        final_prices.update({driver: before})
+
+    return final_prices
+    # except Exception as err:
+    #     raise HTTPException(detail={
+    #         'message': 'There was an error searching drivers '
+    #         + str(err)},
+    #         status_code=400)
 
 
 @router.post('/search/{id_driver}')
@@ -102,7 +136,18 @@ def ask_for_voyage(id_driver: str, voyage: SearchVoyageBase):
                             'message': 'Passenger Not Found'},
                             status_code=400)
     try:
-        price = pricing.price_voyage(voyage, driver)
+        if voyage.is_vip and driver.get("is_vip") and client.get("is_vip"):
+            is_vip = True
+        elif voyage.is_vip:
+            raise Exception('Not Allowed For VIP voyage')
+        else:
+            is_vip = False
+
+        price_request = get_price_request(voyage, driver, is_vip)
+        print(price_request)
+
+        price = requests.post(PRICING_URL+"pricing/voyage",
+                              jsonable_encoder(price_request))
     except Exception as err:
         raise HTTPException(detail={
             'message': 'There was an error getting the price. '
@@ -110,13 +155,6 @@ def ask_for_voyage(id_driver: str, voyage: SearchVoyageBase):
             status_code=400)
 
     is_vip = False
-    if voyage.is_vip and driver.get("is_vip") and client.get("is_vip"):
-        is_vip = True
-        price = pricing.add_vip_price(price)
-    elif voyage.is_vip:
-        raise HTTPException(detail={
-                            'message': 'Not Allowed For VIP voyage'},
-                            status_code=400)
 
     confirmed_voyage = VoyageBase(passenger_id=voyage.passenger_id,
                                   driver_id=id_driver, init=voyage.init,
@@ -175,3 +213,65 @@ def add_complaint(voyage_id: str,  caller_id: str, complaint: ComplaintBase):
 
     voyages.add_complaint(db, voyage_id, complaint)
     # Notify Admins
+
+
+def get_price_request(voyage: SearchVoyageBase, driver, is_vip):
+    id_p = voyage.passenger_id
+    id_driver = driver.get("id")
+    seniority_p, daily_p, monthly_p = voyages.get_history(db,
+                                                          id_p, False)
+
+    price_passenger = PriceUserBase(seniority=seniority_p,
+                                    day_voyages=daily_p,
+                                    month_voyages=monthly_p)
+    price_voyage = PriceVoyageBase(init=voyage.init,
+                                   end=voyage.end,
+                                   is_vip=is_vip)
+    seniority_d, daily_d, monthly_d = voyages.get_history(db,
+                                                          id_driver, True)
+
+    price_driver = PriceDriverBase(seniority=seniority_d,
+                                   day_voyages=daily_d,
+                                   month_voyages=monthly_d,
+                                   id=id_driver,
+                                   is_vip=driver.get("is_vip"),
+                                   location=driver.get("location"))
+
+    price_request = PriceRequestBase(voyage=price_voyage,
+                                     passenger=price_passenger,
+                                     driver=price_driver)
+
+    return price_request
+
+
+def get_price_requests(voyage: SearchVoyageBase, drivers, is_vip):
+    id_p = voyage.passenger_id
+    seniority_p, daily_p, monthly_p = voyages.get_history(db,
+                                                          id_p, False)
+
+    price_passenger = PriceUserBase(seniority=seniority_p,
+                                    day_voyages=daily_p,
+                                    month_voyages=monthly_p)
+    price_voyage = PriceVoyageBase(init=voyage.init,
+                                   end=voyage.end,
+                                   is_vip=is_vip)
+
+    price_drivers = []
+
+    for driver in drivers:
+        id_driver = driver.get("id")
+        seniority_d, daily_d, monthly_d = voyages.get_history(db,
+                                                              id_driver, True)
+        price_driver = PriceDriverBase(seniority=seniority_d,
+                                       day_voyages=daily_d,
+                                       month_voyages=monthly_d,
+                                       id=id_driver,
+                                       is_vip=driver.get("is_vip"),
+                                       location=driver.get("location"))
+        price_drivers.append(price_driver)
+
+    price_request = PriceRequestsBase(voyage=price_voyage,
+                                      passenger=price_passenger,
+                                      drivers=price_drivers)
+
+    return price_request
