@@ -31,7 +31,6 @@ def change_status(db, voyage_id, state):
 
 def change_status_possible(db, voyage_id, new, before):
     voyage_status = find_voyage(db, voyage_id).get("status")
-    print(find_voyage(db, voyage_id))
     if voyage_status != before:
         raise Exception("Voyage is not available.")
     change_status(db, voyage_id, new)

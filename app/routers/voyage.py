@@ -184,13 +184,36 @@ def get_status(user_id: str):
             return {"Rol": "Driver", "Status": status}
 
 
-@router.get('/{voyage_id}')
-def get_voyage_info(voyage_id: str):
+@router.get('/info/{voyage_id}/{user_caller}')
+def get_voyage_info(voyage_id: str, user_caller: str):
     """
     Return The info of voyage asked
     """
     try:
-        return voyages.find_voyage(db, voyage_id)
+        data = voyages.find_voyage(db, voyage_id)
+        if not data:
+            raise Exception("No Voyage Found")
+        is_passenger = data.get("passenger_id") != user_caller
+        is_driver = data.get("driver_id") != user_caller
+        if not is_driver and not is_passenger:
+            raise Exception("Not Allowed")
+        return data
+    except Exception as err:
+        raise HTTPException(detail={'message': f"Can't Access Database {err}"},
+                            status_code=400)
+
+
+@router.get('/location/{voyage_id}/{user_caller}')
+def get_driver_info(voyage_id: str, user_caller: str):
+    """
+    Return The location of driver
+    """
+    try:
+        data = get_voyage_info(voyage_id, user_caller)
+
+        driver = data.get("driver_id")
+
+        return drivers.get_location(db, driver)
     except Exception:
         raise HTTPException(detail={'message': "Can't Access Database"},
                             status_code=400)

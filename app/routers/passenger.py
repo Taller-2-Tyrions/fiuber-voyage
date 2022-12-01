@@ -65,59 +65,50 @@ def search_near_drivers(voyage: SearchVoyageBase):
     """
     Passenger Search For All Nearest Drivers
     """
-    # try:
-    location_searched = [voyage.init.longitude, voyage.init.latitude]
-    near_drivers = drivers.get_nearest_drivers(db, location_searched)
-    vip_prices = {}
+    try:
+        location_searched = [voyage.init.longitude, voyage.init.latitude]
+        near_drivers = drivers.get_nearest_drivers(db, location_searched)
+        vip_prices = {}
 
-    base_url = PRICING_URL+"pricing/voyages"
-    print(base_url)
-    print(near_drivers)
+        base_url = PRICING_URL+"pricing/voyages"
 
-    if voyage.is_vip:
-        vip_drivers = drivers.get_nearest_drivers_vip(db,
-                                                      location_searched)
+        if voyage.is_vip:
+            vip_drivers = drivers.get_nearest_drivers_vip(db,
+                                                          location_searched)
 
-        price_request = get_price_requests(voyage, vip_drivers, True)
+            price_request = get_price_requests(voyage, vip_drivers, True)
 
-        print(price_request)
+            req = requests.post(base_url, json=jsonable_encoder(price_request))
+            data = req.json()
+            if (req.status_code != status.HTTP_200_OK):
+                raise HTTPException(detail=data["detail"],
+                                    status_code=req.status_code)
+            vip_prices = data
 
-        req = requests.post(base_url, jsonable_encoder(price_request))
-        data = req.json()
-        print(data)
+        price_request = get_price_requests(voyage, near_drivers, False)
+
+        req = requests.post(base_url, json=jsonable_encoder(price_request))
         if (req.status_code != status.HTTP_200_OK):
             raise HTTPException(detail=data["detail"],
                                 status_code=req.status_code)
-        vip_prices = data
-        print(vip_prices)
+        prices = data
 
-    price_request = get_price_requests(voyage, near_drivers, False)
-    print(price_request)
+        final_prices = {}
 
-    req = requests.post(base_url, jsonable_encoder(price_request))
-    data = req.json()
-    print(data)
-    if (req.status_code != status.HTTP_200_OK):
-        raise HTTPException(detail=data["detail"],
-                            status_code=req.status_code)
-    prices = data
+        for driver, price in prices.items():
+            final_prices.update({driver: {"Standard": price}})
 
-    final_prices = {}
+        for driver, price in vip_prices.items():
+            before = final_prices.get(driver, {})
+            before.update({"VIP": price})
+            final_prices.update({driver: before})
 
-    for driver, price in prices.items():
-        final_prices.update({driver: {"Standard": price}})
-
-    for driver, price in vip_prices.items():
-        before = final_prices.get(driver, {})
-        before.update({"VIP": price})
-        final_prices.update({driver: before})
-
-    return final_prices
-    # except Exception as err:
-    #     raise HTTPException(detail={
-    #         'message': 'There was an error searching drivers '
-    #         + str(err)},
-    #         status_code=400)
+        return final_prices
+    except Exception as err:
+        raise HTTPException(detail={
+            'message': 'There was an error searching drivers '
+            + str(err)},
+            status_code=400)
 
 
 @router.post('/search/{id_driver}')
@@ -144,10 +135,13 @@ def ask_for_voyage(id_driver: str, voyage: SearchVoyageBase):
             is_vip = False
 
         price_request = get_price_request(voyage, driver, is_vip)
-        print(price_request)
 
-        price = requests.post(PRICING_URL+"pricing/voyage",
-                              jsonable_encoder(price_request))
+        req = requests.post(PRICING_URL+"pricing/voyage",
+                            json=jsonable_encoder(price_request))
+        data = req.json()
+        if (req.status_code != status.HTTP_200_OK):
+            raise HTTPException(detail=data["detail"],
+                                status_code=req.status_code)
     except Exception as err:
         raise HTTPException(detail={
             'message': 'There was an error getting the price. '
@@ -160,7 +154,7 @@ def ask_for_voyage(id_driver: str, voyage: SearchVoyageBase):
                                   driver_id=id_driver, init=voyage.init,
                                   end=voyage.end,
                                   status=VoyageStatus.WAITING.value,
-                                  price=price,
+                                  price=data,
                                   start_time=datetime.utcnow(),
                                   end_time=datetime.utcnow(),
                                   is_vip=is_vip)
@@ -180,11 +174,10 @@ def ask_for_voyage(id_driver: str, voyage: SearchVoyageBase):
     json_confirmed_voyage = jsonable_encoder(confirmed_voyage)
     voyage_noti = str({"voyage_id": id,
                        "voyage_confirmation": json_confirmed_voyage})
-    print("str_vc: "+voyage_noti)
 
     notifications.passenger_choosing(id_driver, voyage_noti)
 
-    return {"final_price": price, "voyage_id": id, "message":
+    return {"final_price": data, "voyage_id": id, "message":
             "Waiting for Drivers answer."}
 
 

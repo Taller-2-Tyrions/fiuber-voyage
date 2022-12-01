@@ -86,4 +86,7 @@ def update_driver(db, driver_id: str, changes):
 
 
 def get_location(db, driver_id):
-    return find_driver(db, driver_id).get("location")
+    driver = find_driver(db, driver_id)
+    if not driver:
+        raise Exception("Driver Not Found")
+    return driver.get("location")
