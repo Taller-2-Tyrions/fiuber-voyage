@@ -74,7 +74,7 @@ def search_near_drivers(voyage: SearchVoyageBase):
 
         if voyage.is_vip:
             vip_drivers = drivers.get_nearest_drivers_vip(db,
-                                                            location_searched)
+                                                          location_searched)
 
             price_request = get_price_requests(voyage, vip_drivers, True)
 
