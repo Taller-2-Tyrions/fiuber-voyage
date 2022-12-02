@@ -74,7 +74,7 @@ def search_near_drivers(voyage: SearchVoyageBase):
 
         if voyage.is_vip:
             vip_drivers = drivers.get_nearest_drivers_vip(db,
-                                                          location_searched)
+                                                            location_searched)
 
             price_request = get_price_requests(voyage, vip_drivers, True)
 
@@ -88,6 +88,7 @@ def search_near_drivers(voyage: SearchVoyageBase):
         price_request = get_price_requests(voyage, near_drivers, False)
 
         req = requests.post(base_url, json=jsonable_encoder(price_request))
+        data = req.json()
         if (req.status_code != status.HTTP_200_OK):
             raise HTTPException(detail=data["detail"],
                                 status_code=req.status_code)
