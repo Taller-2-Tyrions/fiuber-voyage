@@ -260,3 +260,32 @@ def test_get_average_no_voyages():
     passenger_avg = voyages.get_average_score(db, passenger_id,
                                               is_driver=False)
     assert (passenger_avg == "No Calification")
+
+
+def test_get_complaints():
+    db = mongomock.MongoClient().db
+    passenger_id = "19"
+    driver_id = "10"
+    location_init = common.Point(longitude=50, latitude=50)
+    location_end = common.Point(longitude=51, latitude=50.4)
+    test_voyage = VoyageBase(passenger_id=passenger_id,
+                             driver_id=driver_id, init=location_init,
+                             end=location_end,
+                             status=voyage.VoyageStatus.WAITING.value,
+                             price=10, start_time=datetime.utcnow(),
+                             end_time=datetime.utcnow(), is_vip=True)
+    id = voyages.create_voyage(db, test_voyage)
+
+    comp_type = voyage.ComplaintType.AGGRESIVE.value
+
+    complaint = ComplaintBase(complaint_type=comp_type,
+                              description="Grito Todo El Viaje Por Un Partido")
+
+    voyages.add_complaint(db, id, complaint)
+
+    complaints = voyages.get_all_complaints(db)
+
+    print(complaints)
+
+    assert (len(complaints) == 1)
+    assert (complaints[0].get("passenger_id") == passenger_id)

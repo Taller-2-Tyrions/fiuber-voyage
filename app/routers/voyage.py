@@ -217,3 +217,15 @@ def get_driver_info(voyage_id: str, user_caller: str):
     except Exception:
         raise HTTPException(detail={'message': "Can't Access Database"},
                             status_code=400)
+
+
+@router.get('/complaints')
+def get_complaints():
+    """
+    Return all complaints
+    """
+    try:
+        return voyages.get_all_complaints(db)
+    except Exception:
+        raise HTTPException(detail={'message': "Can't Access Database"},
+                            status_code=400)

@@ -235,3 +235,19 @@ def get_history(db, id, is_driver):
     monthly = get_date_voyages(db, id, is_driver, False)
 
     return seniority, daily, monthly
+
+
+def get_all_complaints(db):
+    complaints = db.voyage.find({"complaints":
+                                {"$exists": True,
+                                 "$not": {"$size": 0}}})
+    result = []
+    for data in complaints:
+        print(data)
+        id = str(data.get("_id"))
+        voyage = {"id": id}
+        for key, value in data.items():
+            if key != "_id":
+                voyage.update({key: value})
+        result.append(voyage)
+    return result
