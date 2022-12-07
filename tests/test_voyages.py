@@ -14,6 +14,7 @@ def test_create_voyage():
     location_end = common.Point(longitude=51, latitude=50.4)
     test_voyage = VoyageBase(passenger_id=passenger_id,
                              driver_id=driver_id, init=location_init,
+                             driver_init_location=location_init,
                              end=location_end,
                              status=voyage.VoyageStatus.WAITING.value,
                              price=10, start_time=datetime.utcnow(),
@@ -34,6 +35,7 @@ def test_change_waiting_status():
     location_end = common.Point(longitude=51, latitude=50.4)
     test_voyage = VoyageBase(passenger_id=passenger_id,
                              driver_id=driver_id, init=location_init,
+                             driver_init_location=location_init,
                              end=location_end,
                              status=voyage.VoyageStatus.WAITING.value,
                              price=10, start_time=datetime.utcnow(),
@@ -58,6 +60,7 @@ def test_change_finished_status_should_raise():
     location_end = common.Point(longitude=51, latitude=50.4)
     test_voyage = VoyageBase(passenger_id=passenger_id,
                              driver_id=driver_id, init=location_init,
+                             driver_init_location=location_init,
                              end=location_end,
                              status=voyage.VoyageStatus.WAITING.value,
                              price=10, start_time=datetime.utcnow(),
@@ -82,6 +85,7 @@ def test_get_day_voyages():
         time = time + timedelta(minutes=1)
         voyage_test = VoyageBase(passenger_id=passenger_id,
                                  driver_id=driver_id,
+                                 driver_init_location=location_init,
                                  init=location_init,
                                  end=location_end,
                                  status=voyage.VoyageStatus.FINISHED.value,
@@ -114,6 +118,7 @@ def test_get_months_voyages():
         time = today - timedelta(days=i)
         voyage_test = VoyageBase(passenger_id=passenger_id,
                                  driver_id=driver_id,
+                                 driver_init_location=location_init,
                                  init=location_init,
                                  end=location_end,
                                  status=voyage.VoyageStatus.FINISHED.value,
@@ -145,6 +150,7 @@ def test_get_seniority():
         time = today - timedelta(days=i)
         voyage_test = VoyageBase(passenger_id=passenger_id,
                                  driver_id=driver_id,
+                                 driver_init_location=location_init,
                                  init=location_init,
                                  end=location_end,
                                  status=voyage.VoyageStatus.FINISHED.value,
@@ -172,6 +178,7 @@ def test_push_review():
     location_end = common.Point(longitude=51, latitude=50.4)
     test_voyage = VoyageBase(passenger_id=passenger_id,
                              driver_id=driver_id, init=location_init,
+                             driver_init_location=location_init,
                              end=location_end,
                              status=voyage.VoyageStatus.WAITING.value,
                              price=10, start_time=datetime.utcnow(),
@@ -198,6 +205,7 @@ def test_push_complaint():
     location_end = common.Point(longitude=51, latitude=50.4)
     test_voyage = VoyageBase(passenger_id=passenger_id,
                              driver_id=driver_id, init=location_init,
+                             driver_init_location=location_init,
                              end=location_end,
                              status=voyage.VoyageStatus.WAITING.value,
                              price=10, start_time=datetime.utcnow(),
@@ -231,6 +239,7 @@ def test_get_average():
     for i in range(0, 3):
         voyage_test = VoyageBase(passenger_id=passenger_id,
                                  driver_id=driver_id,
+                                 driver_init_location=location_init,
                                  init=location_init,
                                  end=location_end,
                                  status=voyage.VoyageStatus.FINISHED.value,
@@ -270,6 +279,7 @@ def test_get_complaints():
     location_end = common.Point(longitude=51, latitude=50.4)
     test_voyage = VoyageBase(passenger_id=passenger_id,
                              driver_id=driver_id, init=location_init,
+                             driver_init_location=location_init,
                              end=location_end,
                              status=voyage.VoyageStatus.WAITING.value,
                              price=10, start_time=datetime.utcnow(),
