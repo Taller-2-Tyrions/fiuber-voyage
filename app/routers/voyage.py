@@ -6,7 +6,7 @@ from fastapi.encoders import jsonable_encoder
 from ..schemas.voyage import PassengerStatus, ReviewBase
 from ..schemas.voyage import DriverStatus, VoyageStatus
 from ..schemas.pricing import PriceDriverBase, PriceUserBase, PriceVoyageBase
-from ..schemas.pricing import PriceRequestsBase, PriceRequestBase
+from ..schemas.pricing import PriceRequestBase
 from ..database.mongo import db
 from ..crud import drivers, passenger, voyages
 from ..firebase_notif import firebase as notifications
@@ -66,7 +66,8 @@ def price_cancellation(voyage):
         raise HTTPException(detail={'message': 'Error Cotizando'},
                             status_code=400)
 
-    return {"senderId": id_p, "receiverId": id_driver, "amountInEthers": req.json()}
+    return {"senderId": id_p, "receiverId": id_driver,
+            "amountInEthers": req.json()}
 
 
 @router.delete('/{voyage_id}/{caller_id}')
