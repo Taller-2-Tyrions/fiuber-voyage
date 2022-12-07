@@ -1,17 +1,72 @@
-from fastapi import APIRouter
+import requests
+from fastapi import APIRouter, status
 from fastapi.exceptions import HTTPException
+from fastapi.encoders import jsonable_encoder
 
 from ..schemas.voyage import PassengerStatus, ReviewBase
 from ..schemas.voyage import DriverStatus, VoyageStatus
+from ..schemas.pricing import PriceDriverBase, PriceUserBase, PriceVoyageBase
+from ..schemas.pricing import PriceRequestsBase, PriceRequestBase
 from ..database.mongo import db
 from ..crud import drivers, passenger, voyages
 from ..firebase_notif import firebase as notifications
+from dotenv import load_dotenv
+import os
 
+load_dotenv()
+
+PRICING_URL = os.getenv("PRICING_URL")
 
 router = APIRouter(
     prefix="/voyage",
     tags=['Voyage']
 )
+
+
+def get_price_request(voyage):
+    id_p = voyage.get("passenger_id")
+    is_vip = voyage.get("is_vip")
+    id_driver = voyage.get("driver_id")
+    driver = drivers.find_driver(db, id_driver)
+    seniority_p, daily_p, monthly_p = voyages.get_history(db,
+                                                          id_p, False)
+
+    price_passenger = PriceUserBase(seniority=seniority_p,
+                                    day_voyages=daily_p,
+                                    month_voyages=monthly_p)
+    price_voyage = PriceVoyageBase(init=voyage.get("driver_init_location"),
+                                   end=driver.get("location"),
+                                   is_vip=is_vip)
+    seniority_d, daily_d, monthly_d = voyages.get_history(db,
+                                                          id_driver, True)
+    start_loc = voyage.get("driver_init_location")
+    price_driver = PriceDriverBase(seniority=seniority_d,
+                                   day_voyages=daily_d,
+                                   month_voyages=monthly_d,
+                                   id=id_driver,
+                                   is_vip=is_vip,
+                                   location=start_loc)
+
+    price_request = PriceRequestBase(voyage=price_voyage,
+                                     passenger=price_passenger,
+                                     driver=price_driver)
+
+    return price_request
+
+
+def price_cancellation(voyage):
+    id_p = voyage.get("passenger_id")
+    id_driver = voyage.get("driver_id")
+    price_request = get_price_request(voyage)
+
+    req = requests.post(PRICING_URL+"pricing/voyage",
+                        json=jsonable_encoder(price_request))
+
+    if (req.status_code != status.HTTP_200_OK):
+        raise HTTPException(detail={'message': 'Error Cotizando'},
+                            status_code=400)
+
+    return {"senderId": id_p, "receiverId": id_driver, "amountInEthers": req.json()}
 
 
 @router.delete('/{voyage_id}/{caller_id}')
@@ -34,21 +89,26 @@ def cancel_confirmed_voyage(voyage_id: str, caller_id: str):
         raise HTTPException(detail={'message': "Can't Cancel Others Voyage"},
                             status_code=400)
 
+    is_starting = voyage_status == VoyageStatus.STARTING.value
+    is_travelling = voyage_status == VoyageStatus.TRAVELLING.value
+    is_travelling_passenger = is_travelling and is_passenger
+
     if voyage_status == VoyageStatus.WAITING.value and is_passenger:
+        print("Is Waiting")
         drivers.change_status(db, driver_id, DriverStatus.SEARCHING.value)
         passenger.change_status(db, passenger_id,
                                 PassengerStatus.CHOOSING.value)
-    elif voyage_status == VoyageStatus.STARTING.value:
+    elif is_starting or is_travelling_passenger:
+        print("Is Starting/Travelling")
         drivers.change_status(db, driver_id, DriverStatus.SEARCHING.value)
         passenger.change_status(db, passenger_id,
                                 PassengerStatus.CHOOSING.value)
         if is_passenger:
-            print("Multado")
-            # TODO Cobrar Multa
+            print("Cancel Multa")
             notifications.passenger_cancelled(driver_id)
+            voyages.change_status(db, voyage_id, VoyageStatus.CANCELLED.value)
+            return price_cancellation(voyage)
         else:
-            print("Beneficiado?")
-            # TODO Devolver Plata?
             notifications.driver_cancelled(passenger_id)
     else:
         raise HTTPException(detail={'message': 'Non Cancellable Voyage '},

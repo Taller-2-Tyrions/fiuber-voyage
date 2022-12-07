@@ -72,6 +72,7 @@ class ComplaintBase(BaseModel):
 class VoyageBase(BaseModel):
     passenger_id: str
     driver_id: str
+    driver_init_location: Point
     init: Point
     end: Point
     status: VoyageStatus

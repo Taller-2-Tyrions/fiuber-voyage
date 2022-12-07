@@ -153,6 +153,7 @@ def ask_for_voyage(id_driver: str, voyage: SearchVoyageBase):
 
     confirmed_voyage = VoyageBase(passenger_id=voyage.passenger_id,
                                   driver_id=id_driver, init=voyage.init,
+                                  driver_init_location=driver.get("location"),
                                   end=voyage.end,
                                   status=VoyageStatus.WAITING.value,
                                   price=data,
