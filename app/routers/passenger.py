@@ -127,8 +127,8 @@ def ask_for_voyage(id_driver: str, voyage: SearchVoyageBase):
         raise HTTPException(detail={
                             'message': 'Passenger Not Found'},
                             status_code=400)
-    status = client.get("status")
-    if status != PassengerStatus.CHOOSING.value:
+    pass_status = client.get("status")
+    if pass_status != PassengerStatus.CHOOSING.value:
         raise HTTPException(detail={
                             'message': "Can't Order Voyage While Not Searching"},
                             status_code=400)
