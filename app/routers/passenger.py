@@ -130,7 +130,7 @@ def ask_for_voyage(id_driver: str, voyage: SearchVoyageBase):
     pass_status = client.get("status")
     if pass_status != PassengerStatus.CHOOSING.value:
         raise HTTPException(detail={
-                            'message': "Can't Order Voyage While Not Searching"},
+                            'message': "Cant Order Voyage If Not Searching"},
                             status_code=400)
     try:
         if voyage.is_vip and driver.get("is_vip") and client.get("is_vip"):

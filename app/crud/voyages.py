@@ -42,9 +42,15 @@ def set_starting_status(db, voyage_id):
     change_status_possible(db, voyage_id, new_status, before_status)
 
 
+def set_arriving_status(db, voyage_id):
+    new_status = VoyageStatus.ARRIVING.value
+    before_status = VoyageStatus.STARTING.value
+    change_status_possible(db, voyage_id, new_status, before_status)
+
+
 def set_travelling_status(db, voyage_id):
     new_status = VoyageStatus.TRAVELLING.value
-    before_status = VoyageStatus.STARTING.value
+    before_status = VoyageStatus.ARRIVING.value
     change_status_possible(db, voyage_id, new_status, before_status)
 
 
@@ -55,7 +61,7 @@ def set_finished_status(db, voyage_id):
     changes = {"end_time": datetime.utcnow()}
     db["voyage"].find_one_and_update({"_id": ObjectId(voyage_id)},
                                      {"$set": changes})
-                                     
+
 
 def set_cancelled_status(db, voyage_id):
     new_status = VoyageStatus.CANCELLED.value

@@ -90,22 +90,22 @@ def cancel_confirmed_voyage(voyage_id: str, caller_id: str):
         raise HTTPException(detail={'message': "Can't Cancel Others Voyage"},
                             status_code=400)
 
-    is_starting = voyage_status == VoyageStatus.STARTING.value
-    is_travelling = voyage_status == VoyageStatus.TRAVELLING.value
-    is_travelling_passenger = is_travelling and is_passenger
+    possibles = []
+    possibles.append(VoyageStatus.STARTING.value)
+    possibles.append(VoyageStatus.ARRIVING.value)
+    possibles.append(VoyageStatus.TRAVELLING.value)
+
+    is_on_going = voyage_status in possibles
 
     if voyage_status == VoyageStatus.WAITING.value and is_passenger:
-        print("Is Waiting")
         drivers.change_status(db, driver_id, DriverStatus.SEARCHING.value)
         passenger.change_status(db, passenger_id,
                                 PassengerStatus.CHOOSING.value)
-    elif is_starting or is_travelling_passenger:
-        print("Is Starting/Travelling")
+    elif is_on_going:
         drivers.change_status(db, driver_id, DriverStatus.SEARCHING.value)
         passenger.change_status(db, passenger_id,
                                 PassengerStatus.CHOOSING.value)
         if is_passenger:
-            print("Cancel Multa")
             notifications.passenger_cancelled(driver_id)
             voyages.change_status(db, voyage_id, VoyageStatus.CANCELLED.value)
             return price_cancellation(voyage)

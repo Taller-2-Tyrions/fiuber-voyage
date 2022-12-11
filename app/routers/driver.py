@@ -1,3 +1,5 @@
+import requests
+import os
 from fastapi import APIRouter
 from fastapi.exceptions import HTTPException
 
@@ -13,6 +15,39 @@ router = APIRouter(
     prefix="/voyage/driver",
     tags=['Voyage Driver']
 )
+
+GOOGLE_MAPS_URL = os.getenv("GOOGLE_MAPS_URL")
+GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
+
+
+def is_status_correct(status_code):
+    return status_code//100 == 2
+
+
+def distance_to(_origin_point, _dest_point):
+    origin_point = str(_origin_point.latitude)+','+str(_origin_point.longitude)
+    dest_point = str(_dest_point.latitude)+','+str(_dest_point.longitude)
+
+    url = GOOGLE_MAPS_URL+"?origins=" + origin_point + "&destinations="
+    url += dest_point + "&unit=km;key=" + GOOGLE_MAPS_API_KEY
+    resp = requests.get(GOOGLE_MAPS_URL+"?origins=" + origin_point +
+                        "&destinations=" + dest_point +
+                        "&unit=km&key=" + GOOGLE_MAPS_API_KEY)
+
+    if (not is_status_correct(resp.status_code)):
+        raise HTTPException(detail={
+                    'message': resp.reason
+                }, status_code=500)
+
+    resp_json = resp.json()
+
+    if resp_json['rows'][0]['elements'][0].get("status") == 'ZERO_RESULTS':
+        raise Exception("Path Not Found In Google Maps. "
+                        "Make sure these are valid points")
+
+    distance_in_mts = resp_json['rows'][0]['elements'][0]['distance']['value']
+
+    return distance_in_mts
 
 
 @router.post('/signup/{id_driver}')
@@ -100,6 +135,21 @@ def locate_driver(driver_id: str, location: Point):
     Recieves a driver id an update the location of it in the database
     """
     changes = {"location": location}
+    driver = drivers.find_driver(db, driver_id)
+
+    if driver.get("status") == DriverStatus.GOING.value:
+        id_voyage = voyages.get_current_voyage(db, driver_id,
+                                               is_driver=False)
+        voyage = voyages.find_voyage(db, id_voyage)
+        voy_status = voyage.get("status")
+
+        if voy_status == VoyageStatus.STARTING.value:
+            init = voyage.get("init")
+            distance = distance_to(location, init)
+
+            if distance < 100:
+                voyages.set_arriving_status(db, id_voyage)
+
     return drivers.update_driver(db, driver_id, changes)
 
 
@@ -118,12 +168,12 @@ def accept_voyage(id_voyage: str, status: bool, driver_id: str):
     if not voyage:
         raise HTTPException(detail={'message': 'Non Existent Voyage'},
                             status_code=400)
-    
+
     driver_registered = voyage.get("driver_id")
     if driver_registered != driver_id:
         raise HTTPException(detail={'message': 'Not Your Voyage'},
                             status_code=400)
-    
+
     passenger_id = voyage.get("passenger_id")
     try:
         voyage_status = voyage.get("status")

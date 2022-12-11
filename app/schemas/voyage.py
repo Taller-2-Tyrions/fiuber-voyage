@@ -23,6 +23,7 @@ class PassengerStatus(Enum):
 class VoyageStatus(Enum):
     WAITING = "WAITING"  # Viaje Confirmado Cliente
     STARTING = "STARTING"  # Chofer Yendo A Cliente
+    ARRIVING = "ARRIVING"  # Llegando a Origen
     TRAVELLING = "TRAVELLING"  # Ya con Cliente
     FINISHED = "FINISHED"  # Viaje Confirmado Ambos
     CANCELLED = "CANCELLED"  # Viaje Cancelado
