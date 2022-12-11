@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from fastapi.exceptions import HTTPException
 
 from app.schemas.common import Point
-from ..schemas.voyage import DriverBase, PassengerStatus
+from ..schemas.voyage import DriverBase, PassengerStatus, VoyageStatus
 from ..schemas.voyage import DriverStatus
 from ..database.mongo import db
 from ..crud import drivers, passenger, voyages
@@ -115,12 +115,13 @@ def accept_voyage(id_voyage: str, status: bool, driver_id: str):
     """
 
     voyage = voyages.find_voyage(db, id_voyage)
-    passenger_id = voyage.get("passenger_id")
     if not voyage:
         raise HTTPException(detail={'message': 'Non Existent Voyage'},
                             status_code=400)
+    passenger_id = voyage.get("passenger_id")
     try:
-        if status:
+        voyage_status = voyage.get("status")
+        if status and voyage_status == VoyageStatus.WAITING.value:
             passenger.set_waiting_driver_status(db, passenger_id)
             drivers.set_going_status(db, driver_id)
             voyages.set_starting_status(db, id_voyage)
@@ -130,7 +131,8 @@ def accept_voyage(id_voyage: str, status: bool, driver_id: str):
             passenger.change_status(db, passenger_id,
                                     PassengerStatus.CHOOSING.value)
             drivers.change_status(db, driver_id, DriverStatus.SEARCHING.value)
-            notifications.notify_driver_declined(passenger_id, voyage)
+            if VoyageStatus.WAITING.value:
+                notifications.notify_driver_declined(passenger_id, voyage)
     except Exception as err:
         passenger.change_status(db, passenger_id,
                                 PassengerStatus.CHOOSING.value)

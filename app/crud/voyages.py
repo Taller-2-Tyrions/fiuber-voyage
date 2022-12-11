@@ -55,6 +55,15 @@ def set_finished_status(db, voyage_id):
     changes = {"end_time": datetime.utcnow()}
     db["voyage"].find_one_and_update({"_id": ObjectId(voyage_id)},
                                      {"$set": changes})
+                                     
+
+def set_cancelled_status(db, voyage_id):
+    new_status = VoyageStatus.CANCELLED.value
+    before_status = VoyageStatus.WAITING.value
+    change_status_possible(db, voyage_id, new_status, before_status)
+    changes = {"end_time": datetime.utcnow()}
+    db["voyage"].find_one_and_update({"_id": ObjectId(voyage_id)},
+                                     {"$set": changes})
 
 
 def delete_voyage(db, voyage_id):
