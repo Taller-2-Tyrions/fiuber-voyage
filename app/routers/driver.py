@@ -118,26 +118,39 @@ def accept_voyage(id_voyage: str, status: bool, driver_id: str):
     if not voyage:
         raise HTTPException(detail={'message': 'Non Existent Voyage'},
                             status_code=400)
+    
+    driver_registered = voyage.get("driver_id")
+    if driver_registered != driver_id:
+        raise HTTPException(detail={'message': 'Not Your Voyage'},
+                            status_code=400)
+    
     passenger_id = voyage.get("passenger_id")
     try:
         voyage_status = voyage.get("status")
+
+        reset = True
+
         if status and voyage_status == VoyageStatus.WAITING.value:
             passenger.set_waiting_driver_status(db, passenger_id)
             drivers.set_going_status(db, driver_id)
             voyages.set_starting_status(db, id_voyage)
             notifications.notify_driver_accepted(passenger_id, voyage)
-        else:
+        elif not status or voyage_status == VoyageStatus.CANCELLED.value:
             voyages.delete_voyage(db, id_voyage)
             passenger.change_status(db, passenger_id,
                                     PassengerStatus.CHOOSING.value)
             drivers.change_status(db, driver_id, DriverStatus.SEARCHING.value)
             if VoyageStatus.WAITING.value:
                 notifications.notify_driver_declined(passenger_id, voyage)
+        else:
+            reset = False
+            raise Exception('Already Going Voyage')
     except Exception as err:
-        passenger.change_status(db, passenger_id,
-                                PassengerStatus.CHOOSING.value)
-        drivers.change_status(db, driver_id, DriverStatus.SEARCHING.value)
-        voyages.delete_voyage(db, id_voyage)
+        if reset:
+            passenger.change_status(db, passenger_id,
+                                    PassengerStatus.CHOOSING.value)
+            drivers.change_status(db, driver_id, DriverStatus.SEARCHING.value)
+            voyages.delete_voyage(db, id_voyage)
         raise HTTPException(detail={'message': 'There was an error ... '
                             + str(err)},
                             status_code=400)
