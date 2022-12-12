@@ -147,7 +147,8 @@ def locate_driver(driver_id: str, location: Point):
 
         if voy_status == VoyageStatus.STARTING.value:
             init = voyage.get("init")
-            start = Point(latitude=init.get("latitude"), longitude=init.get("longitude"))
+            start = Point(latitude=init.get("latitude"),
+                          longitude=init.get("longitude"))
             distance = distance_to(location, start)
 
             if distance < CLOSE_METERS:
