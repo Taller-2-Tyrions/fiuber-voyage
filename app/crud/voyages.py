@@ -30,9 +30,14 @@ def change_status(db, voyage_id, state):
 
 
 def change_status_possible(db, voyage_id, new, before):
-    voyage_status = find_voyage(db, voyage_id).get("status")
+    voyage = find_voyage(db, voyage_id)
+
+    if not voyage:
+        raise Exception("Voyage Not Found")
+    
+    voyage_status = voyage.get("status")
     if voyage_status != before:
-        raise Exception("Voyage is not available.")
+        raise Exception("Can't Change To Voyage to that state.")
     change_status(db, voyage_id, new)
 
 
@@ -66,7 +71,9 @@ def set_finished_status(db, voyage_id):
 def set_cancelled_status(db, voyage_id):
     new_status = VoyageStatus.CANCELLED.value
     before_status = VoyageStatus.WAITING.value
+    
     change_status_possible(db, voyage_id, new_status, before_status)
+    
     changes = {"end_time": datetime.utcnow()}
     db["voyage"].find_one_and_update({"_id": ObjectId(voyage_id)},
                                      {"$set": changes})
@@ -230,6 +237,7 @@ def get_current_voyage(db, user_id, is_driver):
     last_voyage = db.voyage.aggregate([
         {"$match": {"$and": [
             {"status": {"$ne": VoyageStatus.FINISHED.value}},
+            {"status": {"$ne": VoyageStatus.CANCELLED.value}},
             {id_parameter: {"$eq": user_id}}
             ]}
          },

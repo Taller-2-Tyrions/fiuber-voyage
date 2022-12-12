@@ -16,6 +16,8 @@ router = APIRouter(
     tags=['Voyage Driver']
 )
 
+CLOSE_METERS = 100
+
 GOOGLE_MAPS_URL = os.getenv("GOOGLE_MAPS_URL")
 GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
 
@@ -139,15 +141,16 @@ def locate_driver(driver_id: str, location: Point):
 
     if driver.get("status") == DriverStatus.GOING.value:
         id_voyage = voyages.get_current_voyage(db, driver_id,
-                                               is_driver=False)
+                                               is_driver=True)
         voyage = voyages.find_voyage(db, id_voyage)
         voy_status = voyage.get("status")
 
         if voy_status == VoyageStatus.STARTING.value:
             init = voyage.get("init")
-            distance = distance_to(location, init)
+            start = Point(latitude=init.get("latitude"), longitude=init.get("longitude"))
+            distance = distance_to(location, start)
 
-            if distance < 100:
+            if distance < CLOSE_METERS:
                 voyages.set_arriving_status(db, id_voyage)
 
     return drivers.update_driver(db, driver_id, changes)

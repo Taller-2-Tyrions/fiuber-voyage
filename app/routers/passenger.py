@@ -193,9 +193,16 @@ def cancel_search(passenger_id: str):
     """
     Passenger Cancels Voyage Search
     """
-    id_voyage = voyages.get_current_voyage(db, passenger_id, is_driver=False)
-    voyages.set_cancelled_status(db, id_voyage)
-    passenger.change_status(db, passenger_id, PassengerStatus.CHOOSING.value)
+    try:
+        id_voyage = voyages.get_current_voyage(db, passenger_id, is_driver=False)
+        voyages.set_cancelled_status(db, id_voyage)
+        passenger.change_status(db, passenger_id, PassengerStatus.CHOOSING.value)
+    except Exception as err:
+        raise HTTPException(detail={
+            'message': 'There was an error updating voyage '
+            + str(err)},
+            status_code=400)
+
 
 
 @router.post('/complaint/{voyage_id}/{caller_id}')
