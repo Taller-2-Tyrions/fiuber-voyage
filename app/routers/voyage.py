@@ -98,7 +98,7 @@ def cancel_confirmed_voyage(voyage_id: str, caller_id: str):
     is_on_going = voyage_status in possibles
 
     if voyage_status == VoyageStatus.WAITING.value and is_passenger:
-        drivers.change_status(db, driver_id, DriverStatus.SEARCHING.value)
+        voyages.set_cancelled_status(db, voyage_id)
         passenger.change_status(db, passenger_id,
                                 PassengerStatus.CHOOSING.value)
     elif is_on_going:
@@ -106,10 +106,10 @@ def cancel_confirmed_voyage(voyage_id: str, caller_id: str):
         passenger.change_status(db, passenger_id,
                                 PassengerStatus.CHOOSING.value)
         if is_passenger:
-            notifications.passenger_cancelled(driver_id)
             voyages.change_status(db, voyage_id, VoyageStatus.CANCELLED.value)
             price = price_cancellation(voyage)
             voyages.update_price(db, voyage_id, price.get("amountInEthers"))
+            notifications.passenger_cancelled(driver_id)
             return price
         else:
             voyages.update_price(db, voyage_id, 0)
