@@ -147,6 +147,9 @@ def get_last_voyages(db, id, is_driver, amount):
 
     return_lists = [data for data in last_voyages]
 
+    for item in return_lists:
+        item.pop("_id")
+
     return return_lists
 
 
