@@ -124,7 +124,7 @@ def get_last_voyages(user_id: str, is_driver: bool):
     Get the last 5 voyages for the user
     """
     try:
-        return voyages.get_last_voyages(db, user_id, is_driver)
+        return voyages.get_last_voyages(db, user_id, is_driver, 5)
     except Exception:
         raise HTTPException(detail={'message': "Can't Access Database"},
                             status_code=400)
