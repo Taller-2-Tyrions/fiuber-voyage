@@ -108,8 +108,11 @@ def cancel_confirmed_voyage(voyage_id: str, caller_id: str):
         if is_passenger:
             notifications.passenger_cancelled(driver_id)
             voyages.change_status(db, voyage_id, VoyageStatus.CANCELLED.value)
-            return price_cancellation(voyage)
+            price = price_cancellation(voyage)
+            voyages.update_price(db, voyage_id, price.get("amountInEthers"))
+            return price
         else:
+            voyages.update_price(db, voyage_id, 0)
             notifications.driver_cancelled(passenger_id)
     else:
         raise HTTPException(detail={'message': 'Non Cancellable Voyage '},

@@ -27,6 +27,7 @@ class VoyageStatus(Enum):
     TRAVELLING = "TRAVELLING"  # Ya con Cliente
     FINISHED = "FINISHED"  # Viaje Confirmado Ambos
     CANCELLED = "CANCELLED"  # Viaje Cancelado
+    STOPPED = "STOPPED"  # Viaje Cancelado Antes De Confrimado x Chofer
 
 
 class ComplaintType(Enum):

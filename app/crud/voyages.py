@@ -68,8 +68,8 @@ def set_finished_status(db, voyage_id):
                                      {"$set": changes})
 
 
-def set_cancelled_status(db, voyage_id):
-    new_status = VoyageStatus.CANCELLED.value
+def set_stopped_status(db, voyage_id):
+    new_status = VoyageStatus.STOPPED.value
     before_status = VoyageStatus.WAITING.value
 
     change_status_possible(db, voyage_id, new_status, before_status)
@@ -241,6 +241,7 @@ def get_current_voyage(db, user_id, is_driver):
         {"$match": {"$and": [
             {"status": {"$ne": VoyageStatus.FINISHED.value}},
             {"status": {"$ne": VoyageStatus.CANCELLED.value}},
+            {"status": {"$ne": VoyageStatus.STOPPED.value}},
             {id_parameter: {"$eq": user_id}}
             ]}
          },
@@ -277,3 +278,9 @@ def get_all_complaints(db):
                 voyage.update({key: value})
         result.append(voyage)
     return result
+
+
+def update_price(db, id_voyage, price):
+    changes = {"price": price}
+    db["voyage"].find_one_and_update({"_id": ObjectId(id_voyage)},
+                                     {"$set": changes})

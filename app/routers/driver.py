@@ -189,7 +189,7 @@ def accept_voyage(id_voyage: str, status: bool, driver_id: str):
             drivers.set_going_status(db, driver_id)
             voyages.set_starting_status(db, id_voyage)
             notifications.notify_driver_accepted(passenger_id, voyage)
-        elif not status or voyage_status == VoyageStatus.CANCELLED.value:
+        elif not status or voyage_status == VoyageStatus.STOPPED.value:
             voyages.delete_voyage(db, id_voyage)
             passenger.change_status(db, passenger_id,
                                     PassengerStatus.CHOOSING.value)
