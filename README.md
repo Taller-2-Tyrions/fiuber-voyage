@@ -1,5 +1,12 @@
 [![codecov](https://codecov.io/gh/Taller-2-Tyrions/fiuber-voyage/branch/main/graph/badge.svg?token=98bKdacJw1)](https://codecov.io/gh/Taller-2-Tyrions/fiuber-voyage)
 
+
+## Run Tests
+
+```bash
+python3 -m pytest tests/
+```
+
 # fiuber-voyage
 
 Historias involucradas
@@ -85,3 +92,45 @@ Viaje:
 	Origen
 	Destino
 	
+
+
+ - Chequear Gateway
+
+ - Calificacion
+ - Denuncia
+
+
+## Logica De Pagos
+
+
+price_voyage = PRICE_PER_METER * distancia + PRICE_PER_MINUTE * duracion
+  seniority del driver indica antiguedad. Al tener mas antiguedad el Driver
+       tendria mas beneficio en el precio de su viaje
+  misma idea con viajes por dia/mes
+price_driver = seniority * DISCOUNT_SENIORITY_DRIVER +  voyage_in_date *
+      DISCOUNT_DAILY_DRIVER + voyage_in_mounth * DISCOUNT_MONTHLY_DRIVER
+  seniority del client simil al Driver
+  misma idea con viajes por dia/mes
+price_client = seniority * DISCOUNT_SENIORITY_CLIENT + voyage_in_date *
+      DISCOUNT_DAILY_CLIENT + voyage_in_mounth * DISCOUNT_MONTHLY_DRIVER
+price_time_await = time_confirmacion * PRICE_WAIT_CONF +
+  time_driver_to_origin * PRICE_ARRIVAL
+
+total_price = (price_voyage + price_driver + price_client + price_time_await)
+      * PRICE_PER_VIP * NIGHT_PLUS
+
+Características del conductor (viajes en el día, viajes en el mes,
+      antigüedad) -> AVERAGE_DRIVER_PRICE
+Características del pasajero (viajes en el día, viajes en el mes, antigüedad
+      , saldo)
+Método de pago
+
+Características del viaje
+(duración --> Google Maps, distancia, posición geográfica, fecha y hora)
+Cantidad de viajes que se realizaron en la última ventana temporal
+(Hora, 30 mins, 10 mins) -> Nosotros
+Día y horario de la realización del viaje
+Tiempo de espera del pasajero para:
+Tiempo hasta que un conductor le confirme
+el viaje --> Variable Actualizable
+Tiempo hasta que el conductor llegue a buscarlo --> Google Maps
