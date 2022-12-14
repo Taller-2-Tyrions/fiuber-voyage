@@ -1,0 +1,5 @@
+ignore:
+  - "app/database"
+  - "app/routers"
+  - "app/firebase_configs.py"
+  - "app/main.py"
