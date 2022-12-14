@@ -11,6 +11,9 @@ def set_return_value(res):
 
 
 def create_passenger(db, passenger):
+    user_found = find_passenger(db, passenger.id)
+    if user_found:
+        raise Exception("User Already Loaded")
     user_encoded = jsonable_encoder(passenger)
     db["passenger"].insert_one(user_encoded)
 

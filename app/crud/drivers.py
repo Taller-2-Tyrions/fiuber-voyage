@@ -13,6 +13,9 @@ def set_return_value(res):
 
 
 def create_driver(db, driver):
+    user_found = find_driver(db, driver.id)
+    if user_found:
+        raise Exception("User Already Loaded")
     driver = jsonable_encoder(driver)
     db["drivers"].insert_one(driver)
 

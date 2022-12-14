@@ -293,3 +293,20 @@ def get_complaints():
     except Exception:
         raise HTTPException(detail={'message': "Can't Access Database"},
                             status_code=400)
+
+
+@router.get("/vip/{user_id}/{is_driver}")
+def get_vip(user_id: str, is_driver: bool):
+    """
+    Return If User Is VIP Or Not
+    """
+    if is_driver:
+        user = drivers.find_driver(db, user_id)
+    else:
+        user = passenger.find_passenger(db, user_id)
+
+    if not user:
+        raise HTTPException(detail={'message': "User Not Found"},
+                            status_code=400)
+
+    return user.get("is_vip")
