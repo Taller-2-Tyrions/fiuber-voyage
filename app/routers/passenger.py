@@ -154,8 +154,6 @@ def ask_for_voyage(id_driver: str, voyage: SearchVoyageBase):
             + str(err)},
             status_code=400)
 
-    is_vip = False
-
     confirmed_voyage = VoyageBase(passenger_id=voyage.passenger_id,
                                   driver_id=id_driver, init=voyage.init,
                                   driver_init_location=driver.get("location"),
