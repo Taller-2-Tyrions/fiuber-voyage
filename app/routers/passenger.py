@@ -175,17 +175,40 @@ def ask_for_voyage(id_driver: str, voyage: SearchVoyageBase):
                             status_code=400)
 
     id = voyages.create_voyage(db, confirmed_voyage)
-    drivers.set_waiting_status(db, id_driver)
-    passenger.set_waiting_confirmation_status(db, voyage.passenger_id)
-
-    json_confirmed_voyage = jsonable_encoder(confirmed_voyage)
-    voyage_noti = str({"voyage_id": id,
-                       "voyage_confirmation": json_confirmed_voyage})
-
-    notifications.passenger_choosing(id_driver, voyage_noti)
 
     return {"final_price": data, "voyage_id": id, "message":
             "Waiting for Drivers answer."}
+
+
+@router.post("/confirm/{voyage_id}/{passenger_id}/{status}")
+def confirm_voyage(voyage_id: str, passenger_id: str, status: bool):
+    """
+    Inform If Passenger Is Capable Of Paying Voyage
+    """
+    if not status:
+        voyages.delete_voyage(db, voyage_id)
+    else:
+        voyage = voyages.find_voyage(db, voyage_id)
+        if not voyage:
+            raise HTTPException(detail={
+                                'message': 'There is no Voyage To Confirm'},
+                                status_code=400)
+
+        id_passenger = voyage.get("passenger_id")
+        if passenger_id != id_passenger:
+            raise HTTPException(detail={
+                                'message': 'Not your Voyage To Confirm'},
+                                status_code=400)
+
+        id_driver = voyage.get("driver_id")
+
+        drivers.set_waiting_status(db, id_driver)
+        passenger.set_waiting_confirmation_status(db, passenger_id)
+
+        voyage_noti = str({"voyage_id": id,
+                          "voyage_confirmation": voyage})
+
+        notifications.passenger_choosing(id_driver, voyage_noti)
 
 
 @router.delete('/search/{passenger_id}')
