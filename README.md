@@ -1,5 +1,10 @@
 [![codecov](https://codecov.io/gh/Taller-2-Tyrions/fiuber-voyage/branch/main/graph/badge.svg?token=98bKdacJw1)](https://codecov.io/gh/Taller-2-Tyrions/fiuber-voyage)
 
+# Fiuber-Voyage
+Microservicio para el manejo de los distintos viajes que se llevan a cabo dentro de la plataforma.
+
+# Documentación
+Documentación técnica: https://taller-2-tyrions.github.io/fiuber-documentation-tecnica/
 
 ## Run Tests
 
@@ -7,47 +12,33 @@
 python3 -m pytest tests/
 ```
 
-# fiuber-voyage
+## Historias involucradas
 
-Historias involucradas
+#### Búsqueda de destino por dirección (Front)
 
-# Búsqueda de destino por dirección (Front)
+Como pasajero quiero poder realizar búsquedas de destinos utilizando la dirección del mismo y así poder iniciar el proceso de viaje
 
-## Como pasajero quiero poder realizar búsquedas de destinos utilizando la dirección del mismo y así poder iniciar el proceso de viaje
+#### Cotización del viaje
 
-==========================================================================================
+Como pasajero quiero poder saber previamente cual es el precio estimado del viaje a realizar, sabiendo el destino seleccionado y la modalidad de viaje.
 
-# Cotización del viaje
+#### Confirmación de viaje
 
-## Como pasajero quiero poder saber previamente cual es el precio estimado del viaje a realizar, sabiendo el destino seleccionado y la modalidad de viaje.
+Como pasajero quiero poder confirmar la realización del viaje
 
-==========================================================================================
+#### Aceptar/rechazar un viaje
 
-# Confirmación de viaje
+Como chofer quiero poder aceptar o rechazar la realización de un viaje
 
-## Como pasajero quiero poder confirmar la realización del viaje
+#### Guía de viaje (Front)
 
-==========================================================================================
+Como pasajero/chofer quiero poder visualizar el recorrido a realizar y conocer la posición actual.
 
-# Aceptar/rechazar un viaje
+#### Aviso de fin 
 
-## Como chofer quiero poder aceptar o rechazar la realización de un viaje
+Como chofer quiero poder indicar que el viaje ha finalizado
 
-==========================================================================================
-
-# Guía de viaje (Front)
-
-## Como pasajero/chofer quiero poder visualizar el recorrido a realizar y conocer la posición actual.
-
-==========================================================================================
-
-# Aviso de fin 
-
-## Como chofer quiero poder indicar que el viaje ha finalizado
-
-==========================================================================================
-
-Microservicio de viajes
+# Microservicio de viajes
 
 3 choferes activos en la aplicacion. 3 pasajeros activos
 
