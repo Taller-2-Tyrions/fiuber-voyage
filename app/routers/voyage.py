@@ -286,18 +286,6 @@ def get_driver_info(voyage_id: str, user_caller: str):
                             status_code=400)
 
 
-@router.get('/complaints')
-def get_complaints():
-    """
-    Return all complaints
-    """
-    try:
-        return voyages.get_all_complaints(db)
-    except Exception:
-        raise HTTPException(detail={'message': "Can't Access Database"},
-                            status_code=400)
-
-
 @router.get("/vip/{user_id}/{is_driver}")
 def get_vip(user_id: str, is_driver: bool):
     """
@@ -313,3 +301,15 @@ def get_vip(user_id: str, is_driver: bool):
                             status_code=400)
 
     return user.get("is_vip")
+
+
+@router.get('/complaints')
+def get_complaints():
+    """
+    Return all complaints
+    """
+    try:
+        return voyages.get_all_complaints(db)
+    except Exception:
+        raise HTTPException(detail={'message': "Can't Access Database"},
+                            status_code=400)
