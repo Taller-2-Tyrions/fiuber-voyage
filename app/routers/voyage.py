@@ -80,7 +80,7 @@ def cancel_confirmed_voyage(voyage_id: str, caller_id: str):
         raise HTTPException(detail={'message': 'Non Existent Voyage'},
                             status_code=400)
     voyage_status = voyage.get("status")
-    current_price = voyage.get("price")
+    current_price = float(voyage.get("price"))
     passenger_id = voyage.get("passenger_id")
     driver_id = voyage.get("driver_id")
 
