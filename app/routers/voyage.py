@@ -80,6 +80,7 @@ def cancel_confirmed_voyage(voyage_id: str, caller_id: str):
         raise HTTPException(detail={'message': 'Non Existent Voyage'},
                             status_code=400)
     voyage_status = voyage.get("status")
+    current_price = float(voyage.get("price"))
     passenger_id = voyage.get("passenger_id")
     driver_id = voyage.get("driver_id")
 
@@ -108,7 +109,9 @@ def cancel_confirmed_voyage(voyage_id: str, caller_id: str):
         if is_passenger:
             voyages.change_status(db, voyage_id, VoyageStatus.CANCELLED.value)
             price = price_cancellation(voyage)
-            voyages.update_price(db, voyage_id, price.get("amountInEthers"))
+            cancel_price = price.get("amountInEthers")
+            if cancel_price < current_price:
+                voyages.update_price(db, voyage_id, cancel_price)
             notifications.passenger_cancelled(driver_id)
             return price
         else:
@@ -281,6 +284,23 @@ def get_driver_info(voyage_id: str, user_caller: str):
     except Exception:
         raise HTTPException(detail={'message': "Can't Access Database"},
                             status_code=400)
+
+
+@router.get("/vip/{user_id}/{is_driver}")
+def get_vip(user_id: str, is_driver: bool):
+    """
+    Return If User Is VIP Or Not
+    """
+    if is_driver:
+        user = drivers.find_driver(db, user_id)
+    else:
+        user = passenger.find_passenger(db, user_id)
+
+    if not user:
+        raise HTTPException(detail={'message': "User Not Found"},
+                            status_code=400)
+
+    return user.get("is_vip")
 
 
 @router.get('/complaints')
